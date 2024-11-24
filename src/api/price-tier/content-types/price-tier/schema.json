@@ -1,0 +1,22 @@
+{
+  "kind": "collectionType",
+  "collectionName": "price_tiers",
+  "info": {
+    "singularName": "price-tier",
+    "pluralName": "price-tiers",
+    "displayName": "priceTiers",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "minQuantity": {
+      "type": "integer"
+    },
+    "price": {
+      "type": "decimal"
+    }
+  }
+}

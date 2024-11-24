@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_descuentos_descuento_por_mayors",
+  "info": {
+    "displayName": "descuentoPorMayor"
+  },
+  "options": {},
+  "attributes": {
+    "cantidadMinima": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "porcentajeDescuento": {
+      "type": "integer",
+      "default": 0,
+      "max": 99,
+      "min": 0
+    },
+    "activo": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

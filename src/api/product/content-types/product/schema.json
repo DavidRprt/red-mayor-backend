@@ -1,0 +1,59 @@
+{
+  "kind": "collectionType",
+  "collectionName": "products",
+  "info": {
+    "singularName": "product",
+    "pluralName": "products",
+    "displayName": "Product",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nombreProducto": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "uid"
+    },
+    "descripcion": {
+      "type": "text"
+    },
+    "imagenes": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true
+    },
+    "precioBase": {
+      "type": "decimal",
+      "min": 0
+    },
+    "categoria": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::category.category"
+    },
+    "stock": {
+      "type": "integer",
+      "min": 0
+    },
+    "descuentoPorMayor": {
+      "displayName": "descuentoPorMayor",
+      "type": "component",
+      "repeatable": false,
+      "component": "descuentos.descuento-por-mayor"
+    }
+  }
+}
