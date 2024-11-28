@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "proveedors",
+  "info": {
+    "singularName": "proveedor",
+    "pluralName": "proveedors",
+    "displayName": "Proveedor"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Nombre": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "Nombre"
+    },
+    "categorias": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::category.category",
+      "mappedBy": "proveedor"
+    }
+  }
+}

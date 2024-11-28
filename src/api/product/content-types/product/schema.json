@@ -4,7 +4,7 @@
   "info": {
     "singularName": "product",
     "pluralName": "products",
-    "displayName": "Product",
+    "displayName": "Producto",
     "description": ""
   },
   "options": {
@@ -16,7 +16,8 @@
       "type": "string"
     },
     "slug": {
-      "type": "uid"
+      "type": "uid",
+      "targetField": "nombreProducto"
     },
     "descripcion": {
       "type": "text"
@@ -54,6 +55,10 @@
       "type": "component",
       "repeatable": false,
       "component": "descuentos.descuento-por-mayor"
+    },
+    "homepage": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

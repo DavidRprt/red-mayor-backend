@@ -372,7 +372,8 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
 export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   collectionName: 'categories';
   info: {
-    displayName: 'Category';
+    description: '';
+    displayName: 'Categoria';
     pluralName: 'categories';
     singularName: 'category';
   };
@@ -380,7 +381,6 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    categoryName: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -390,21 +390,25 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
       'api::category.category'
     > &
       Schema.Attribute.Private;
+    nombreCategoria: Schema.Attribute.String;
+    proveedor: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::proveedor.proveedor'
+    >;
     publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'categoryName'>;
+    slug: Schema.Attribute.UID<'nombreCategoria'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
   };
 }
 
-export interface ApiPriceTierPriceTier extends Struct.CollectionTypeSchema {
-  collectionName: 'price_tiers';
+export interface ApiEtiquetaEtiqueta extends Struct.CollectionTypeSchema {
+  collectionName: 'etiquetas';
   info: {
-    description: '';
-    displayName: 'priceTiers';
-    pluralName: 'price-tiers';
-    singularName: 'price-tier';
+    displayName: 'etiqueta';
+    pluralName: 'etiquetas';
+    singularName: 'etiqueta';
   };
   options: {
     draftAndPublish: true;
@@ -416,12 +420,12 @@ export interface ApiPriceTierPriceTier extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
-      'api::price-tier.price-tier'
+      'api::etiqueta.etiqueta'
     > &
       Schema.Attribute.Private;
-    minQuantity: Schema.Attribute.Integer;
-    price: Schema.Attribute.Decimal;
+    nombreEtiqueta: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'nombreEtiqueta'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -432,7 +436,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   collectionName: 'products';
   info: {
     description: '';
-    displayName: 'Product';
+    displayName: 'Producto';
     pluralName: 'products';
     singularName: 'product';
   };
@@ -450,6 +454,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       'descuentos.descuento-por-mayor',
       false
     >;
+    homepage: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     imagenes: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios',
       true
@@ -469,7 +474,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         number
       >;
     publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID;
+    slug: Schema.Attribute.UID<'nombreProducto'>;
     stock: Schema.Attribute.Integer &
       Schema.Attribute.SetMinMax<
         {
@@ -477,6 +482,39 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         },
         number
       >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiProveedorProveedor extends Struct.CollectionTypeSchema {
+  collectionName: 'proveedors';
+  info: {
+    displayName: 'Proveedor';
+    pluralName: 'proveedors';
+    singularName: 'proveedor';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    categorias: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::category.category'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::proveedor.proveedor'
+    > &
+      Schema.Attribute.Private;
+    Nombre: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'Nombre'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -993,8 +1031,9 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::category.category': ApiCategoryCategory;
-      'api::price-tier.price-tier': ApiPriceTierPriceTier;
+      'api::etiqueta.etiqueta': ApiEtiquetaEtiqueta;
       'api::product.product': ApiProductProduct;
+      'api::proveedor.proveedor': ApiProveedorProveedor;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

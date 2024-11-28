@@ -1,0 +1,22 @@
+{
+  "kind": "collectionType",
+  "collectionName": "etiquetas",
+  "info": {
+    "singularName": "etiqueta",
+    "pluralName": "etiquetas",
+    "displayName": "etiqueta"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nombreEtiqueta": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "nombreEtiqueta"
+    }
+  }
+}
