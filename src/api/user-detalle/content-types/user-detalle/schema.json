@@ -1,0 +1,41 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_detalles",
+  "info": {
+    "singularName": "user-detalle",
+    "pluralName": "user-detalles",
+    "displayName": "UserDetalles",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "razonSocial": {
+      "type": "string",
+      "required": true
+    },
+    "CUIT": {
+      "type": "string",
+      "required": true
+    },
+    "tipoUsuario": {
+      "type": "enumeration",
+      "enum": [
+        "Persona Física (Monotributo)",
+        "Responsable Inscripto",
+        "Sociedad"
+      ]
+    },
+    "telefono": {
+      "type": "string",
+      "required": true
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}

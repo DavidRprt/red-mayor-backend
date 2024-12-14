@@ -41,11 +41,6 @@
       "type": "decimal",
       "min": 0
     },
-    "categoria": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::category.category"
-    },
     "stock": {
       "type": "integer",
       "min": 0
@@ -59,6 +54,12 @@
     "homepage": {
       "type": "boolean",
       "default": false
+    },
+    "subcategoria": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::subcategoria.subcategoria",
+      "inversedBy": "productos"
     }
   }
 }

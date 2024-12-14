@@ -397,35 +397,10 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
     >;
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<'nombreCategoria'>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiEtiquetaEtiqueta extends Struct.CollectionTypeSchema {
-  collectionName: 'etiquetas';
-  info: {
-    displayName: 'etiqueta';
-    pluralName: 'etiquetas';
-    singularName: 'etiqueta';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
+    subcategorias: Schema.Attribute.Relation<
       'oneToMany',
-      'api::etiqueta.etiqueta'
-    > &
-      Schema.Attribute.Private;
-    nombreEtiqueta: Schema.Attribute.String;
-    publishedAt: Schema.Attribute.DateTime;
-    slug: Schema.Attribute.UID<'nombreEtiqueta'>;
+      'api::subcategoria.subcategoria'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -445,7 +420,6 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   };
   attributes: {
     activo: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
-    categoria: Schema.Attribute.Relation<'oneToOne', 'api::category.category'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -482,6 +456,10 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         },
         number
       >;
+    subcategoria: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::subcategoria.subcategoria'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -518,6 +496,77 @@ export interface ApiProveedorProveedor extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+  };
+}
+
+export interface ApiSubcategoriaSubcategoria
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'subcategorias';
+  info: {
+    description: '';
+    displayName: 'Subcategoria';
+    pluralName: 'subcategorias';
+    singularName: 'subcategoria';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    categoria: Schema.Attribute.Relation<'manyToOne', 'api::category.category'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::subcategoria.subcategoria'
+    > &
+      Schema.Attribute.Private;
+    nombreSubcategoria: Schema.Attribute.String & Schema.Attribute.Required;
+    productos: Schema.Attribute.Relation<'oneToMany', 'api::product.product'>;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'nombreSubcategoria'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiUserDetalleUserDetalle extends Struct.CollectionTypeSchema {
+  collectionName: 'user_detalles';
+  info: {
+    description: '';
+    displayName: 'UserDetalles';
+    pluralName: 'user-detalles';
+    singularName: 'user-detalle';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    CUIT: Schema.Attribute.String & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::user-detalle.user-detalle'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    razonSocial: Schema.Attribute.String & Schema.Attribute.Required;
+    telefono: Schema.Attribute.String & Schema.Attribute.Required;
+    tipoUsuario: Schema.Attribute.Enumeration<
+      ['Persona F\u00EDsica (Monotributo)', 'Responsable Inscripto', 'Sociedad']
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'oneToOne',
+      'plugin::users-permissions.user'
+    >;
   };
 }
 
@@ -976,7 +1025,6 @@ export interface PluginUsersPermissionsUser
   };
   options: {
     draftAndPublish: false;
-    timestamps: true;
   };
   attributes: {
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
@@ -1031,9 +1079,10 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::category.category': ApiCategoryCategory;
-      'api::etiqueta.etiqueta': ApiEtiquetaEtiqueta;
       'api::product.product': ApiProductProduct;
       'api::proveedor.proveedor': ApiProveedorProveedor;
+      'api::subcategoria.subcategoria': ApiSubcategoriaSubcategoria;
+      'api::user-detalle.user-detalle': ApiUserDetalleUserDetalle;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

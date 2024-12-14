@@ -24,6 +24,12 @@
       "relation": "manyToOne",
       "target": "api::proveedor.proveedor",
       "inversedBy": "categorias"
+    },
+    "subcategorias": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::subcategoria.subcategoria",
+      "mappedBy": "categoria"
     }
   }
 }
