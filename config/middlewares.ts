@@ -6,7 +6,7 @@ export default [
     name: "strapi::cors",
     config: {
       enabled: true,
-      origin: ["http://localhost:3000"], // Dominios permitidos
+      origin: process.env.CORS_ORIGIN,
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Métodos HTTP permitidos
       headers: ["Content-Type", "Authorization"], // Encabezados permitidos
     },
