@@ -1,16 +1,21 @@
-export default [
+module.exports = [
   "strapi::logger",
   "strapi::errors",
-  "strapi::security",
   {
-    name: "strapi::cors",
+    name: "strapi::security",
     config: {
-      enabled: true,
-      origin: process.env.CORS_ORIGIN,
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Métodos HTTP permitidos
-      headers: ["Content-Type", "Authorization"], // Encabezados permitidos
+      contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+          "connect-src": ["'self'", "https:"],
+          "img-src": ["'self'", "data:", "blob:", "res.cloudinary.com"],
+          "media-src": ["'self'", "data:", "blob:", "res.cloudinary.com"],
+          upgradeInsecureRequests: null,
+        },
+      },
     },
   },
+  "strapi::cors",
   "strapi::poweredBy",
   "strapi::query",
   "strapi::body",
