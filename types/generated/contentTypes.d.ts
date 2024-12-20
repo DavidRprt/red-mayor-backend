@@ -420,14 +420,17 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   };
   attributes: {
     activo: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    cantidadPorCaja: Schema.Attribute.Integer;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     descripcion: Schema.Attribute.Text;
+    descripcionCantidad: Schema.Attribute.String;
     descuentoPorMayor: Schema.Attribute.Component<
       'descuentos.descuento-por-mayor',
       false
     >;
+    detalles: Schema.Attribute.Text;
     homepage: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     imagenes: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios',

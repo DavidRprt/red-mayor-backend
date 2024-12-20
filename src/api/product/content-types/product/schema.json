@@ -60,6 +60,15 @@
       "relation": "manyToOne",
       "target": "api::subcategoria.subcategoria",
       "inversedBy": "productos"
+    },
+    "cantidadPorCaja": {
+      "type": "integer"
+    },
+    "detalles": {
+      "type": "text"
+    },
+    "descripcionCantidad": {
+      "type": "string"
     }
   }
 }
