@@ -425,7 +425,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     descripcion: Schema.Attribute.Text;
-    descripcionCantidad: Schema.Attribute.String;
+    descripcionCantidad: Schema.Attribute.Text;
     descuentoPorMayor: Schema.Attribute.Component<
       'descuentos.descuento-por-mayor',
       false

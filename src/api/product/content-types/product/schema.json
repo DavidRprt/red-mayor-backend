@@ -68,7 +68,7 @@
       "type": "text"
     },
     "descripcionCantidad": {
-      "type": "string"
+      "type": "text"
     }
   }
 }
