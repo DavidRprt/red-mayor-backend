@@ -36,6 +36,12 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user"
+    },
+    "direcciones": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::direccion.direccion",
+      "mappedBy": "user"
     }
   }
 }

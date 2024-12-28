@@ -407,6 +407,79 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiDireccionDireccion extends Struct.CollectionTypeSchema {
+  collectionName: 'direcciones';
+  info: {
+    description: '';
+    displayName: 'Direccion';
+    pluralName: 'direcciones';
+    singularName: 'direccion';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    ciudad: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        minLength: 2;
+      }>;
+    codigoPostal: Schema.Attribute.String & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    direccion: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        minLength: 3;
+      }>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::direccion.direccion'
+    > &
+      Schema.Attribute.Private;
+    provincia: Schema.Attribute.Enumeration<
+      [
+        'Buenos Aires',
+        'CABA',
+        'Catamarca',
+        'Chaco',
+        'Chubut',
+        'C\u00F3rdoba',
+        'Corrientes',
+        'Entre R\u00EDos',
+        'Formosa',
+        'Jujuy',
+        'La Pampa',
+        'La Rioja',
+        'Mendoza',
+        'Misiones',
+        'Neuqu\u00E9n',
+        'R\u00EDo Negro',
+        'Salta',
+        'San Juan',
+        'San Luis',
+        'Santa Cruz',
+        'Santa Fe',
+        'Santiago del Estero',
+        'Tierra del Fuego',
+        'Tucum\u00E1n',
+      ]
+    > &
+      Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    referencias: Schema.Attribute.Text;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   collectionName: 'products';
   info: {
@@ -459,6 +532,9 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         },
         number
       >;
+    stockReservado: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<0>;
     subcategoria: Schema.Attribute.Relation<
       'manyToOne',
       'api::subcategoria.subcategoria'
@@ -551,6 +627,10 @@ export interface ApiUserDetalleUserDetalle extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     CUIT: Schema.Attribute.String & Schema.Attribute.Required;
+    direcciones: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::direccion.direccion'
+    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1036,6 +1116,10 @@ export interface PluginUsersPermissionsUser
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    direcciones: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::direccion.direccion'
+    >;
     email: Schema.Attribute.Email &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -1082,6 +1166,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::category.category': ApiCategoryCategory;
+      'api::direccion.direccion': ApiDireccionDireccion;
       'api::product.product': ApiProductProduct;
       'api::proveedor.proveedor': ApiProveedorProveedor;
       'api::subcategoria.subcategoria': ApiSubcategoriaSubcategoria;
