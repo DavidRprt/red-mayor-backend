@@ -1,0 +1,40 @@
+{
+  "kind": "collectionType",
+  "collectionName": "orden_productos",
+  "info": {
+    "singularName": "orden-producto",
+    "pluralName": "orden-productos",
+    "displayName": "OrdenProducto",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "orden": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::orden.orden",
+      "inversedBy": "orden_productos"
+    },
+    "cantidad": {
+      "type": "integer",
+      "required": true,
+      "min": 1
+    },
+    "precioUnidad": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
+    },
+    "precioConDescuento": {
+      "type": "decimal",
+      "required": true,
+      "min": 0
+    },
+    "producto": {
+      "type": "string"
+    }
+  }
+}

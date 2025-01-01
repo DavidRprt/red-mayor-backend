@@ -65,11 +65,17 @@
       "inversedBy": "users",
       "configurable": false
     },
-    "direcciones": {
+    "ordens": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::orden.orden",
+      "mappedBy": "user"
+    },
+    "direccions": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::direccion.direccion",
-      "mappedBy": "user"
+      "mappedBy": "users_permissions_user"
     }
   }
 }

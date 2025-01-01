@@ -439,6 +439,7 @@ export interface ApiDireccionDireccion extends Struct.CollectionTypeSchema {
       'api::direccion.direccion'
     > &
       Schema.Attribute.Private;
+    ordens: Schema.Attribute.Relation<'oneToMany', 'api::orden.orden'>;
     provincia: Schema.Attribute.Enumeration<
       [
         'Buenos Aires',
@@ -470,6 +471,102 @@ export interface ApiDireccionDireccion extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     referencias: Schema.Attribute.Text;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    users_permissions_user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
+export interface ApiOrdenProductoOrdenProducto
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'orden_productos';
+  info: {
+    description: '';
+    displayName: 'OrdenProducto';
+    pluralName: 'orden-productos';
+    singularName: 'orden-producto';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    cantidad: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::orden-producto.orden-producto'
+    > &
+      Schema.Attribute.Private;
+    orden: Schema.Attribute.Relation<'manyToOne', 'api::orden.orden'>;
+    precioConDescuento: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    precioUnidad: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
+    producto: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiOrdenOrden extends Struct.CollectionTypeSchema {
+  collectionName: 'ordenes';
+  info: {
+    description: '';
+    displayName: 'Orden';
+    pluralName: 'ordenes';
+    singularName: 'orden';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    direccion: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::direccion.direccion'
+    >;
+    estado: Schema.Attribute.Enumeration<
+      ['Pendiente', 'Pagado', 'Enviado', 'Completado', 'Cancelado']
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::orden.orden'> &
+      Schema.Attribute.Private;
+    metodoPago: Schema.Attribute.Enumeration<['Transferencia', 'MercadoPago']>;
+    orden_productos: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::orden-producto.orden-producto'
+    >;
+    publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -532,9 +629,6 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
         },
         number
       >;
-    stockReservado: Schema.Attribute.Integer &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<0>;
     subcategoria: Schema.Attribute.Relation<
       'manyToOne',
       'api::subcategoria.subcategoria'
@@ -627,10 +721,6 @@ export interface ApiUserDetalleUserDetalle extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     CUIT: Schema.Attribute.String & Schema.Attribute.Required;
-    direcciones: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::direccion.direccion'
-    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1116,7 +1206,7 @@ export interface PluginUsersPermissionsUser
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    direcciones: Schema.Attribute.Relation<
+    direccions: Schema.Attribute.Relation<
       'oneToMany',
       'api::direccion.direccion'
     >;
@@ -1131,6 +1221,7 @@ export interface PluginUsersPermissionsUser
       'plugin::users-permissions.user'
     > &
       Schema.Attribute.Private;
+    ordens: Schema.Attribute.Relation<'oneToMany', 'api::orden.orden'>;
     password: Schema.Attribute.Password &
       Schema.Attribute.Private &
       Schema.Attribute.SetMinMaxLength<{
@@ -1167,6 +1258,8 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::category.category': ApiCategoryCategory;
       'api::direccion.direccion': ApiDireccionDireccion;
+      'api::orden-producto.orden-producto': ApiOrdenProductoOrdenProducto;
+      'api::orden.orden': ApiOrdenOrden;
       'api::product.product': ApiProductProduct;
       'api::proveedor.proveedor': ApiProveedorProveedor;
       'api::subcategoria.subcategoria': ApiSubcategoriaSubcategoria;

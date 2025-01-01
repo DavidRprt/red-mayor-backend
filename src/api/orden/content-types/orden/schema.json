@@ -1,0 +1,51 @@
+{
+  "kind": "collectionType",
+  "collectionName": "ordenes",
+  "info": {
+    "singularName": "orden",
+    "pluralName": "ordenes",
+    "displayName": "Orden",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "ordens"
+    },
+    "estado": {
+      "type": "enumeration",
+      "enum": [
+        "Pendiente",
+        "Pagado",
+        "Enviado",
+        "Completado",
+        "Cancelado"
+      ]
+    },
+    "direccion": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::direccion.direccion",
+      "inversedBy": "ordens"
+    },
+    "orden_productos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::orden-producto.orden-producto",
+      "mappedBy": "orden"
+    },
+    "metodoPago": {
+      "type": "enumeration",
+      "enum": [
+        "Transferencia",
+        "MercadoPago"
+      ]
+    }
+  }
+}

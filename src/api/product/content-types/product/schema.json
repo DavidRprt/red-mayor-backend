@@ -69,11 +69,6 @@
     },
     "descripcionCantidad": {
       "type": "text"
-    },
-    "stockReservado": {
-      "type": "integer",
-      "required": true,
-      "default": 0
     }
   }
 }

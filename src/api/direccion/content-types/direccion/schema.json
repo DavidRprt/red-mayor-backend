@@ -59,11 +59,17 @@
     "referencias": {
       "type": "text"
     },
-    "user": {
+    "ordens": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::orden.orden",
+      "mappedBy": "direccion"
+    },
+    "users_permissions_user": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
-      "inversedBy": "direcciones"
+      "inversedBy": "direccions"
     }
   }
 }

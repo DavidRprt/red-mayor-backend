@@ -6,7 +6,6 @@ export default factories.createCoreController(
     async validateAndCheck(ctx) {
       const { items } = ctx.request.body || {}
 
-      console.log("Items recibidos en la solicitud:", items)
       if (!items || !Array.isArray(items) || items.length === 0) {
         return ctx.badRequest(
           "El cuerpo de la solicitud debe incluir un arreglo 'items' con productos."
@@ -18,26 +17,17 @@ export default factories.createCoreController(
 
       for (const item of items) {
         const producto = await strapi.db.query("api::product.product").findOne({
-          where: { id: item.id },
+          where: { documentId: item.id },
           populate: ["descuentoPorMayor"],
         })
-
-        console.log("Producto encontrado con descuento:", producto)
 
         if (!producto) {
           continue
         }
 
-        const stockDisponible = producto.stock - producto.stockReservado
+        // Asegúrate de que stock no sea null
+        const stockDisponible = producto.stock || 0 // Si el stock es null, asignamos 0
         const stockOrden = Math.min(item.quantity, stockDisponible)
-
-        console.log(
-          `Stock disponible para ${producto.nombre}:`,
-          stockDisponible
-        )
-        console.log(
-          `Stock solicitado: ${item.quantity}, Stock ajustado: ${stockOrden}`
-        )
 
         // Calcular precios
         const basePrice = producto.precioBase // Precio sin descuento
@@ -49,25 +39,15 @@ export default factories.createCoreController(
         if (descuento?.activo && stockOrden >= descuento.cantidadMinima) {
           discountedPrice =
             basePrice * (1 - descuento.porcentajeDescuento / 100)
-
-          console.log(
-            `Descuento aplicado. Precio base: ${basePrice}, Precio con descuento: ${discountedPrice}`
-          )
-        } else {
-          console.log(
-            `No aplica descuento. Precio base: ${basePrice}, Precio final: ${discountedPrice}`
-          )
         }
 
         // Sumar al total con descuento
         totalDiscountedPrice += discountedPrice * stockOrden
-        console.log(
-          `Precio total acumulado con descuento: ${totalDiscountedPrice}`
-        )
 
         // Agregar producto validado
         productosValidados.push({
-          id: producto.id,
+          id: producto.id, // ID del producto
+          documentId: producto.documentId, // Document ID del producto
           name: producto.nombre,
           requestedStock: item.quantity,
           stockInOrder: stockOrden,
