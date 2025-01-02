@@ -378,7 +378,7 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
     singularName: 'category';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -416,7 +416,7 @@ export interface ApiDireccionDireccion extends Struct.CollectionTypeSchema {
     singularName: 'direccion';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     ciudad: Schema.Attribute.String &
@@ -491,7 +491,7 @@ export interface ApiOrdenProductoOrdenProducto
     singularName: 'orden-producto';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     cantidad: Schema.Attribute.Integer &
@@ -545,7 +545,7 @@ export interface ApiOrdenOrden extends Struct.CollectionTypeSchema {
     singularName: 'orden';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
@@ -586,7 +586,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     singularName: 'product';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     activo: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
@@ -642,12 +642,13 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
 export interface ApiProveedorProveedor extends Struct.CollectionTypeSchema {
   collectionName: 'proveedors';
   info: {
+    description: '';
     displayName: 'Proveedor';
     pluralName: 'proveedors';
     singularName: 'proveedor';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     categorias: Schema.Attribute.Relation<
@@ -682,7 +683,7 @@ export interface ApiSubcategoriaSubcategoria
     singularName: 'subcategoria';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     categoria: Schema.Attribute.Relation<'manyToOne', 'api::category.category'>;
@@ -714,7 +715,7 @@ export interface ApiUserDetalleUserDetalle extends Struct.CollectionTypeSchema {
     singularName: 'user-detalle';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     createdAt: Schema.Attribute.DateTime;
