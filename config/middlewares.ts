@@ -15,7 +15,18 @@ module.exports = [
       },
     },
   },
-  "strapi::cors",
+  {
+    name: "strapi::cors",
+    config: {
+      origin: [
+        "http://localhost:3000", // Para desarrollo local
+        "https://red-mayor-frontend.onrender.com", // Para producción
+      ],
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      headers: ["Content-Type", "Authorization"],
+      credentials: true, // Permitir envío de cookies
+    },
+  },
   "strapi::poweredBy",
   "strapi::query",
   "strapi::body",
