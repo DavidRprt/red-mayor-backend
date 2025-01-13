@@ -6,7 +6,6 @@ export default factories.createCoreController(
     async createWithProducts(ctx) {
       const { metodoPago, direccion, productos } = ctx.request.body || {}
 
-
       // Obtener el usuario autenticado desde el token
       const usuario = ctx.state.user
 
@@ -122,16 +121,7 @@ export default factories.createCoreController(
           fecha.getMonth() + 1
         )
           .toString()
-          .padStart(2, "0")}/${fecha.getFullYear()} ${fecha
-          .getHours()
-          .toString()
-          .padStart(
-            2,
-            "0"
-          )}:${fecha.getMinutes().toString().padStart(2, "0")}:${fecha
-          .getSeconds()
-          .toString()
-          .padStart(2, "0")}`
+          .padStart(2, "0")}/${fecha.getFullYear()}`
 
         // Enviar un email de agradecimiento al usuario
         try {
@@ -140,38 +130,48 @@ export default factories.createCoreController(
             from: strapi.config.get("plugin.email.settings.defaultFrom"),
             subject: "¡Gracias por tu compra en RedXMayor!",
             html: `
-<table style="width: 100%; background-color: #000000; padding: 20px; font-family: Arial, sans-serif; color: #ffffff;">
+<table style="width: 100%; background-color: #ffffff; padding: 20px; font-family: Arial, sans-serif; color: #000000;">
   <tr>
     <td>
-      <table style="max-width: 600px; margin: 0 auto; background-color: #1a1a1a; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);">
+      <!-- Encabezado con logo -->
+      <table style="max-width: 600px; margin: 0 auto; border-radius: 8px 8px 0 0; overflow: hidden; text-align: center;">
         <thead>
           <tr>
-            <th style="padding: 20px; text-align: center;">
-              <img src="https://res.cloudinary.com/dazyde0ys/image/upload/v1736794245/logo_dark_b20165d4a0.png" alt="RedXMayor" style="max-width: 200px; margin-bottom: 15px;">
+            <th style="padding: 20px; background-color: #1a1a1a; border-radius: 8px 8px 0 0;">
+              <img src="https://res.cloudinary.com/dazyde0ys/image/upload/v1736794245/logo_dark_b20165d4a0.png" alt="RedXMayor" style="max-width: 200px; margin-bottom: 10px;">
               <h1 style="margin: 0; font-size: 24px; color: #00b0f0;">¡Gracias por tu compra, ${usuario.username}!</h1>
             </th>
           </tr>
         </thead>
+      </table>
+
+      <!-- Cuerpo del correo -->
+      <table style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 0 0 8px 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
         <tbody>
           <tr>
-            <td style="padding: 20px; color: #ffffff;">
+            <td style="padding: 20px; color: #000000;">
               <p style="font-size: 16px;">Fecha de la compra: ${fechaFormateada}</p>
-              <p style="font-size: 16px;">Hemos recibido tu pedido y lo estamos procesando.</p>
+              <p style="font-size: 16px;">Hemos recibido tu pedido y lo estamos procesando. Pronto nos pondremos en contacto contigo.</p>
               <p style="font-size: 18px; font-weight: bold;">Resumen del Pedido:</p>
-              <ul style="padding-left: 20px; font-size: 16px;">
+              <ul style="padding-left: 20px; font-size: 16px; color: #000000;">
                 ${productosProcesados
                   .map(
                     (item) =>
                       `<li style="margin-bottom: 10px;">
                         <strong>${item.slug}</strong><br>
                         Cantidad: ${item.cantidadFinal} <br>
-                        Precio por unidad: $${item.precioUnidad.toFixed(2)}<br>
-                        Precio con descuento: $${item.precioConDescuento.toFixed(2)}
+                        Precio: $${item.precioConDescuento.toFixed(2)}
                       </li>`
                   )
                   .join("")}
               </ul>
-              <p style="font-size: 16px;">¡Gracias por confiar en nosotros!</p>
+              <p style="font-size: 16px; margin-top: 20px;">¡Gracias por confiar en nosotros!</p>
+              <hr style="border: none; border-top: 1px solid #cccccc; margin: 20px 0;">
+              <p style="font-size: 16px; text-align: center;">¿Tienes dudas? Comunícate directamente con tu vendedor:</p>
+              <p style="font-size: 18px; text-align: center; font-weight: bold;">
+                <a href="https://wa.me/549123456789" style="color: #0073e6; text-decoration: none;">📱 Enviar mensaje por WhatsApp</a>
+              </p>
+              <p style="text-align: center; color: #666666; font-size: 14px;">Nuestro equipo se comunicará contigo en breve para completar tu experiencia de compra.</p>
             </td>
           </tr>
         </tbody>
@@ -188,10 +188,10 @@ export default factories.createCoreController(
             from: strapi.config.get("plugin.email.settings.defaultFrom"),
             subject: "Nueva venta registrada en RedXMayor",
             html: `
-<table style="width: 100%; background-color: #000000; padding: 20px; font-family: Arial, sans-serif; color: #ffffff;">
+<table style="width: 100%; background-color: #ffffff; padding: 20px; font-family: Arial, sans-serif; color: #000000;">
   <tr>
     <td>
-      <h1 style="color: #00b0f0;">Nueva venta registrada</h1>
+      <h1 style="color: #0073e6;">Nueva venta registrada</h1>
       <p>Fecha: ${fechaFormateada}</p>
       <p><strong>Datos del Cliente:</strong></p>
 <ul>
@@ -213,13 +213,13 @@ export default factories.createCoreController(
   </li>
 </ul>
       <p><strong>Detalles de la Compra:</strong></p>
-      <table style="width: 100%; border-collapse: collapse; color: #ffffff;">
+      <table style="width: 100%; border-collapse: collapse; color: #000000;">
         <thead>
-          <tr style="background-color: #1a1a1a;">
-            <th style="padding: 10px; border: 1px solid #ffffff;">Slug</th>
-            <th style="padding: 10px; border: 1px solid #ffffff;">Cantidad</th>
-            <th style="padding: 10px; border: 1px solid #ffffff;">Precio Unitario</th>
-            <th style="padding: 10px; border: 1px solid #ffffff;">Precio con Descuento</th>
+          <tr style="background-color: #f5f5f5;">
+            <th style="padding: 10px; border: 1px solid #cccccc;">Slug</th>
+            <th style="padding: 10px; border: 1px solid #cccccc;">Cantidad</th>
+            <th style="padding: 10px; border: 1px solid #cccccc;">Precio Unitario</th>
+            <th style="padding: 10px; border: 1px solid #cccccc;">Precio con Descuento</th>
           </tr>
         </thead>
         <tbody>
@@ -227,10 +227,10 @@ export default factories.createCoreController(
             .map(
               (item) => `
             <tr>
-              <td style="padding: 10px; border: 1px solid #ffffff;">${item.slug}</td>
-              <td style="padding: 10px; border: 1px solid #ffffff;">${item.cantidadFinal}</td>
-              <td style="padding: 10px; border: 1px solid #ffffff;">$${item.precioUnidad.toFixed(2)}</td>
-              <td style="padding: 10px; border: 1px solid #ffffff;">$${item.precioConDescuento.toFixed(2)}</td>
+              <td style="padding: 10px; border: 1px solid #cccccc;">${item.slug}</td>
+              <td style="padding: 10px; border: 1px solid #cccccc;">${item.cantidadFinal}</td>
+              <td style="padding: 10px; border: 1px solid #cccccc;">$${item.precioUnidad.toFixed(2)}</td>
+              <td style="padding: 10px; border: 1px solid #cccccc;">$${item.precioConDescuento.toFixed(2)}</td>
             </tr>`
             )
             .join("")}
