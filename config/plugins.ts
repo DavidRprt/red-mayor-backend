@@ -14,16 +14,22 @@ module.exports = ({ env }) => ({
       },
     },
   },
-  // Configuración de SendGrid
+  // Configuración de nodemailer para enviar correos
   email: {
     config: {
-      provider: "sendgrid",
+      provider: "nodemailer",
       providerOptions: {
-        apiKey: env("SENDGRID_API_KEY"),
+        host: env("EMAIL_SMTP_HOST"), 
+        port: env.int("EMAIL_SMTP_PORT"), 
+        auth: {
+          user: env("EMAIL_SMTP_USER"),
+          pass: env("EMAIL_SMTP_PASS"),
+        },
+        secure: true, 
       },
       settings: {
-        defaultFrom: "info@domain.com",
-        defaultReplyTo: "info@domain.com",
+        defaultFrom: env("EMAIL_ADDRESS_FROM"), 
+        defaultReplyTo: env("EMAIL_ADDRESS_REPLY"),
       },
     },
   },
