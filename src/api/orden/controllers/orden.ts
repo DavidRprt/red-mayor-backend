@@ -4,7 +4,8 @@ export default factories.createCoreController(
   "api::orden.orden",
   ({ strapi }) => ({
     async createWithProducts(ctx) {
-      const { metodoPago, direccion, productos } = ctx.request.body || {}
+      const { metodoPago, direccion, productos, observaciones, cupon } =
+        ctx.request.body || {}
 
       // Obtener el usuario autenticado desde el token
       const usuario = ctx.state.user
@@ -18,6 +19,35 @@ export default factories.createCoreController(
         return ctx.badRequest(
           "Faltan datos obligatorios: metodoPago, direccion o productos."
         )
+      }
+
+      async function validarCupon(cupon) {
+        if (!cupon) return null
+
+        try {
+          // Convertir el cupón ingresado a mayúsculas
+          const cuponNormalizado = cupon.trim().toUpperCase()
+
+          const cuponValido = await strapi.db
+            .query("api::cupon.cupon")
+            .findOne({
+              where: { codigo: cuponNormalizado, activo: true },
+            })
+
+          if (
+            !cuponValido ||
+            new Date(cuponValido.fechaExpiracion) < new Date()
+          ) {
+            console.log("CUPON NO VALIDO")
+            return null // Cupón no válido o expirado
+          }
+
+          console.log("CUPON VALIDO")
+          return cuponValido.porcentajeDescuento // Retorna el porcentaje de descuento
+        } catch (error) {
+          strapi.log.error("Error al validar el cupón:", error)
+          return null
+        }
       }
 
       try {
@@ -50,17 +80,20 @@ export default factories.createCoreController(
               estado: "Pendiente",
               direccion,
               metodoPago,
+              observaciones: observaciones,
             },
           }
         )
+
+        const porcentajeDescuentoCupon = await validarCupon(cupon)
 
         const productosProcesados = []
         for (const item of productos) {
           const producto = await strapi.db
             .query("api::product.product")
             .findOne({
-              where: { id: item.id }, // Buscar por ID del producto
-              populate: ["descuentoPorMayor"], // Aseguramos que el descuento se obtenga
+              where: { id: item.id },
+              populate: ["descuentoPorMayor"],
             })
 
           if (!producto || !producto.activo) {
@@ -71,8 +104,6 @@ export default factories.createCoreController(
 
           const cantidadSolicitada = item.cantidad
           const stockDisponible = producto.stock
-
-          // Ajustar la cantidad al stock disponible
           const cantidadFinal = Math.min(cantidadSolicitada, stockDisponible)
 
           if (cantidadFinal === 0) {
@@ -81,8 +112,9 @@ export default factories.createCoreController(
             )
           }
 
-          // Calcular el precio con descuento si aplica
-          let precioConDescuento = producto.precioBase // Precio base por defecto
+          let precioConDescuento = producto.precioBase
+
+          // Verifica si el producto tiene descuento mayorista
           if (
             producto.descuentoPorMayor &&
             producto.descuentoPorMayor.activo &&
@@ -91,6 +123,15 @@ export default factories.createCoreController(
             const descuento =
               producto.descuentoPorMayor.porcentajeDescuento || 0
             precioConDescuento = producto.precioBase * (1 - descuento / 100)
+          }
+
+          // Aplica el descuento del cupón solo si no tiene otro descuento
+          if (
+            porcentajeDescuentoCupon &&
+            precioConDescuento === producto.precioBase
+          ) {
+            precioConDescuento =
+              producto.precioBase * (1 - porcentajeDescuentoCupon / 100)
           }
 
           // Crear el registro de OrdenProducto
@@ -115,7 +156,6 @@ export default factories.createCoreController(
             precioConDescuento,
           })
         }
-
         const fecha = new Date()
         const fechaFormateada = `${fecha.getDate().toString().padStart(2, "0")}/${(
           fecha.getMonth() + 1
@@ -202,6 +242,7 @@ export default factories.createCoreController(
   <li>Tipo de Usuario: ${detallesUsuario.tipoUsuario}</li>
   <li>Teléfono: ${detallesUsuario.telefono}</li>
   <li>Método de Pago: ${metodoPago}</li>
+  <li>Observaciones: ${observaciones}</li>
   <li style="margin-bottom: 10px;"><strong>Dirección:</strong>
     <ul style="list-style-type: none; padding-left: 15px;">
       <li>Calle: ${direccionValida.direccion}</li>

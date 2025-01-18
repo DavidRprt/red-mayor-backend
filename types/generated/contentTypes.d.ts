@@ -407,6 +407,39 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiCuponCupon extends Struct.CollectionTypeSchema {
+  collectionName: 'cupones';
+  info: {
+    description: '';
+    displayName: 'Cupon';
+    pluralName: 'cupones';
+    singularName: 'cupon';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    activo: Schema.Attribute.Boolean &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<true>;
+    codigo: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    fechaExpiracion: Schema.Attribute.Date & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::cupon.cupon'> &
+      Schema.Attribute.Private;
+    porcentajeDescuento: Schema.Attribute.Integer & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiDireccionDireccion extends Struct.CollectionTypeSchema {
   collectionName: 'direcciones';
   info: {
@@ -478,6 +511,37 @@ export interface ApiDireccionDireccion extends Struct.CollectionTypeSchema {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
+  };
+}
+
+export interface ApiFormularioFormulario extends Struct.CollectionTypeSchema {
+  collectionName: 'formularios';
+  info: {
+    displayName: 'Formulario';
+    pluralName: 'formularios';
+    singularName: 'formulario';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    email: Schema.Attribute.Email & Schema.Attribute.Required;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::formulario.formulario'
+    > &
+      Schema.Attribute.Private;
+    message: Schema.Attribute.Text & Schema.Attribute.Required;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    phone: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -561,7 +625,10 @@ export interface ApiOrdenOrden extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::orden.orden'> &
       Schema.Attribute.Private;
-    metodoPago: Schema.Attribute.Enumeration<['Transferencia', 'MercadoPago']>;
+    metodoPago: Schema.Attribute.Enumeration<
+      ['Transferencia', 'MercadoPago', 'Convenir']
+    >;
+    observaciones: Schema.Attribute.Text;
     orden_productos: Schema.Attribute.Relation<
       'oneToMany',
       'api::orden-producto.orden-producto'
@@ -1258,7 +1325,9 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::category.category': ApiCategoryCategory;
+      'api::cupon.cupon': ApiCuponCupon;
       'api::direccion.direccion': ApiDireccionDireccion;
+      'api::formulario.formulario': ApiFormularioFormulario;
       'api::orden-producto.orden-producto': ApiOrdenProductoOrdenProducto;
       'api::orden.orden': ApiOrdenOrden;
       'api::product.product': ApiProductProduct;

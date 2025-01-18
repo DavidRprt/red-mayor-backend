@@ -44,8 +44,12 @@
       "type": "enumeration",
       "enum": [
         "Transferencia",
-        "MercadoPago"
+        "MercadoPago",
+        "Convenir"
       ]
+    },
+    "observaciones": {
+      "type": "text"
     }
   }
 }

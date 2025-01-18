@@ -1,0 +1,34 @@
+{
+  "kind": "collectionType",
+  "collectionName": "cupones",
+  "info": {
+    "singularName": "cupon",
+    "pluralName": "cupones",
+    "displayName": "Cupon",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "codigo": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "fechaExpiracion": {
+      "type": "date",
+      "required": true
+    },
+    "porcentajeDescuento": {
+      "type": "integer",
+      "required": true
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true,
+      "required": true
+    }
+  }
+}
