@@ -26,7 +26,7 @@ export default factories.createCoreController(
           }
         )
 
-        const adminEmail = "davirapo@gmail.com"
+        const adminEmail = "contacto@redxmayor.com"
 
         // Enviar correo al administrador
         await strapi.plugins["email"].services.email.send({
