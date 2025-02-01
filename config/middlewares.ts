@@ -20,7 +20,7 @@ module.exports = [
     config: {
       origin: [
         "http://localhost:3000", // Para desarrollo local
-        "https://red-mayor-frontend.onrender.com", // Para producción
+        "https://www.redxmayor.com", // Para producción
       ],
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       headers: ["Content-Type", "Authorization"],
