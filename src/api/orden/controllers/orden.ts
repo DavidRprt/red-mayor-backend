@@ -209,7 +209,7 @@ export default factories.createCoreController(
               <hr style="border: none; border-top: 1px solid #cccccc; margin: 20px 0;">
               <p style="font-size: 16px; text-align: center;">¿Tienes dudas? Comunícate directamente con tu vendedor:</p>
               <p style="font-size: 18px; text-align: center; font-weight: bold;">
-                <a href="https://wa.me/5493418191010" style="color: #0073e6; text-decoration: none;">📱 Enviar mensaje por WhatsApp</a>
+                <a href="https://wa.me/5493416712802" style="color: #0073e6; text-decoration: none;">📱 Enviar mensaje por WhatsApp</a>
               </p>
               <p style="text-align: center; color: #666666; font-size: 14px;">Nuestro equipo se comunicará contigo en breve para completar tu experiencia de compra.</p>
             </td>
