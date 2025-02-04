@@ -148,13 +148,14 @@ export default factories.createCoreController(
             }
           )
 
-          productosProcesados.push({
-            slug: producto.slug,
-            cantidadSolicitada,
-            cantidadFinal,
-            precioUnidad: producto.precioBase,
-            precioConDescuento,
-          })
+       productosProcesados.push({
+         slug: producto.slug, 
+         nombreProducto: producto.nombreProducto, 
+         cantidadSolicitada,
+         cantidadFinal,
+         precioUnidad: producto.precioBase,
+         precioConDescuento,
+       })
         }
         const fecha = new Date()
         const fechaFormateada = `${fecha.getDate().toString().padStart(2, "0")}/${(
@@ -178,7 +179,6 @@ export default factories.createCoreController(
         <thead>
           <tr>
             <th style="padding: 20px; background-color: #1a1a1a; border-radius: 8px 8px 0 0;">
-              <img src="https://res.cloudinary.com/dazyde0ys/image/upload/v1736794245/logo_dark_b20165d4a0.png" alt="RedXMayor" style="max-width: 200px; margin-bottom: 10px;">
               <h1 style="margin: 0; font-size: 24px; color: #00b0f0;">¡Gracias por tu compra, ${usuario.username}!</h1>
             </th>
           </tr>
@@ -198,7 +198,7 @@ export default factories.createCoreController(
                   .map(
                     (item) =>
                       `<li style="margin-bottom: 10px;">
-                        <strong>${item.slug}</strong><br>
+                        <strong>${item.nombreProducto}</strong><br>
                         Cantidad: ${item.cantidadFinal} <br>
                         Precio: $${item.precioConDescuento.toFixed(2)}
                       </li>`
