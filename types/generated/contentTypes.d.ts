@@ -369,6 +369,35 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiActualizacionActualizacion
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'actualizaciones';
+  info: {
+    displayName: 'Actualizacion';
+    pluralName: 'actualizaciones';
+    singularName: 'actualizacion';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    CSV: Schema.Attribute.Media<'files'>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::actualizacion.actualizacion'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   collectionName: 'categories';
   info: {
@@ -545,6 +574,36 @@ export interface ApiFormularioFormulario extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiMarcaMarca extends Struct.CollectionTypeSchema {
+  collectionName: 'marcas';
+  info: {
+    description: '';
+    displayName: 'Marca';
+    pluralName: 'marcas';
+    singularName: 'marca';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::marca.marca'> &
+      Schema.Attribute.Private;
+    nombreMarca: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    productos: Schema.Attribute.Relation<'oneToMany', 'api::product.product'>;
+    publishedAt: Schema.Attribute.DateTime;
+    slug: Schema.Attribute.UID<'nombreMarca'> & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiOrdenProductoOrdenProducto
   extends Struct.CollectionTypeSchema {
   collectionName: 'orden_productos';
@@ -679,6 +738,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       'api::product.product'
     > &
       Schema.Attribute.Private;
+    marca: Schema.Attribute.Relation<'manyToOne', 'api::marca.marca'>;
     nombreProducto: Schema.Attribute.String;
     precioBase: Schema.Attribute.Decimal &
       Schema.Attribute.SetMinMax<
@@ -710,7 +770,7 @@ export interface ApiProveedorProveedor extends Struct.CollectionTypeSchema {
   collectionName: 'proveedors';
   info: {
     description: '';
-    displayName: 'Proveedor';
+    displayName: 'Rubro';
     pluralName: 'proveedors';
     singularName: 'proveedor';
   };
@@ -1324,10 +1384,12 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::actualizacion.actualizacion': ApiActualizacionActualizacion;
       'api::category.category': ApiCategoryCategory;
       'api::cupon.cupon': ApiCuponCupon;
       'api::direccion.direccion': ApiDireccionDireccion;
       'api::formulario.formulario': ApiFormularioFormulario;
+      'api::marca.marca': ApiMarcaMarca;
       'api::orden-producto.orden-producto': ApiOrdenProductoOrdenProducto;
       'api::orden.orden': ApiOrdenOrden;
       'api::product.product': ApiProductProduct;

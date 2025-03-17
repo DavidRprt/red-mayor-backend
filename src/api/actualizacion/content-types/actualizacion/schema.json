@@ -1,0 +1,22 @@
+{
+  "kind": "collectionType",
+  "collectionName": "actualizaciones",
+  "info": {
+    "singularName": "actualizacion",
+    "pluralName": "actualizaciones",
+    "displayName": "Actualizacion"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "CSV": {
+      "allowedTypes": [
+        "files"
+      ],
+      "type": "media",
+      "multiple": false
+    }
+  }
+}
