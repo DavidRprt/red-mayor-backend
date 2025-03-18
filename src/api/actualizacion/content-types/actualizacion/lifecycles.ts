@@ -8,54 +8,70 @@ export default {
     strapi.log.info("📌 Datos de CSV en el evento:")
     console.log(result.CSV)
 
-    // Verificar si el CSV tiene una URL (Cloudinary)
     if (result.CSV && result.CSV.url) {
       try {
         const csvUrl = result.CSV.url
 
-        // Descargar el archivo CSV desde Cloudinary
+        // Descargar CSV desde Cloudinary
         strapi.log.info(`📥 Descargando CSV desde: ${csvUrl}`)
         const response = await axios.get(csvUrl, { responseType: "text" })
         const csvData = response.data
 
-        // Procesar CSV
+        // Procesar CSV con separador correcto
         const records = parse(csvData, {
           columns: true,
           skip_empty_lines: true,
+          delimiter: ";", // IMPORTANTE: Asegura que las columnas se separen correctamente
         })
+
+        // Verificar la estructura real de los encabezados
+        strapi.log.info(
+          `📌 Encabezados detectados: ${Object.keys(records[0]).join(", ")}`
+        )
+
+        if (!records.length) {
+          strapi.log.warn("⚠️ El CSV está vacío o mal formateado.")
+          return
+        }
 
         strapi.log.info(
           `📌 CSV procesado correctamente. ${records.length} registros encontrados.`
         )
 
-        // 🔥 Actualizar productos en la BD
         for (const record of records) {
-          const { slug, precioBase, stock } = record
+          // Asegurar que las claves existen y no tienen espacios extra
+          const codigo = record["Codigo"]?.trim()
+          const precioFinal = record["Precio Final"]?.trim()?.replace(",", ".") // Reemplaza la coma decimal por un punto
+          const stock = record["Stock"]?.trim()
 
-          // Buscar el producto en la BD
+          if (!codigo || !precioFinal || !stock) {
+            strapi.log.warn(
+              `⚠️ Datos incompletos en fila: ${JSON.stringify(record)}`
+            )
+            continue
+          }
+
+          // Buscar producto en la BD usando el código como slug
           const existingProduct = await strapi.entityService.findMany(
             "api::product.product",
-            {
-              filters: { slug },
-            }
+            { filters: { slug: codigo } }
           )
 
           if (existingProduct.length > 0) {
-            // Actualizar el producto
             await strapi.entityService.update(
               "api::product.product",
               existingProduct[0].id,
               {
                 data: {
-                  precioBase: parseFloat(precioBase),
-                  stock: parseInt(stock, 10),
+                  precioBase: parseFloat(precioFinal), // Convertir precio a float
+                  stock: parseInt(stock, 10), // Convertir stock a entero
                 },
               }
             )
 
-            strapi.log.info(`✅ Producto actualizado: ${slug}`)
+            strapi.log.info(`✅ Producto actualizado: ${codigo}`)
           } else {
-            strapi.log.warn(`⚠️ Producto no encontrado: ${slug}`)
+            strapi.log.warn(`⚠️ Producto no encontrado: ${codigo}`)
           }
         }
 
