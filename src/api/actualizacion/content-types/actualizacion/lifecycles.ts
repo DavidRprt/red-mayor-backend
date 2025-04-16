@@ -1,60 +1,52 @@
 import axios from "axios"
-import { parse } from "csv-parse/sync"
+import * as XLSX from "xlsx"
 
 export default {
   async afterCreate(event) {
     const { result } = event
 
-    strapi.log.info("📌 Datos de CSV en el evento:")
+    strapi.log.info("📌 Datos del archivo en el evento:")
     console.log(result.CSV)
 
     if (result.CSV && result.CSV.url) {
       try {
-        const csvUrl = result.CSV.url
+        const fileUrl = result.CSV.url
 
-        // Descargar CSV desde Cloudinary
-        strapi.log.info(`📥 Descargando CSV desde: ${csvUrl}`)
-        const response = await axios.get(csvUrl, { responseType: "text" })
-        const csvData = response.data
-
-        // Procesar CSV con separador correcto
-        const records = parse(csvData, {
-          columns: true,
-          skip_empty_lines: true,
-          delimiter: ";", // IMPORTANTE: Asegura que las columnas se separen correctamente
+        // Descargar Excel como array buffer
+        strapi.log.info(`📥 Descargando Excel desde: ${fileUrl}`)
+        const response = await axios.get(fileUrl, {
+          responseType: "arraybuffer",
         })
+        const workbook = XLSX.read(response.data, { type: "buffer" })
 
-        // Verificar la estructura real de los encabezados
-        strapi.log.info(
-          `📌 Encabezados detectados: ${Object.keys(records[0]).join(", ")}`
-        )
+        // Leer hoja 1
+        const sheet = workbook.Sheets[workbook.SheetNames[0]]
+        const records = XLSX.utils.sheet_to_json(sheet)
 
         if (!records.length) {
-          strapi.log.warn("⚠️ El CSV está vacío o mal formateado.")
+          strapi.log.warn("⚠️ El Excel está vacío o mal formateado.")
           return
         }
 
         strapi.log.info(
-          `📌 CSV procesado correctamente. ${records.length} registros encontrados.`
+          `📌 Excel procesado correctamente. ${records.length} registros encontrados.`
         )
 
         for (const record of records) {
-          // Asegurar que las claves existen y no tienen espacios extra
-          const codigo = record["Codigo"]?.trim()
-          const precioFinal = record["Precio Final"]?.trim()?.replace(",", ".") // Reemplaza la coma decimal por un punto
-          const stock = record["Stock"]?.trim()
+          const slug = record["SLUG"]?.toString()?.trim()
+          const precio = parseFloat(record["precioBase"])
+          const stock = parseInt(record["stock"], 10)
 
-          if (!codigo || !precioFinal || !stock) {
+          if (!slug || isNaN(precio) || isNaN(stock)) {
             strapi.log.warn(
               `⚠️ Datos incompletos en fila: ${JSON.stringify(record)}`
             )
             continue
           }
 
-          // Buscar producto en la BD usando el código como slug
           const existingProduct = await strapi.entityService.findMany(
             "api::product.product",
-            { filters: { slug: codigo } }
+            { filters: { slug } }
           )
 
           if (existingProduct.length > 0) {
@@ -63,24 +55,24 @@ export default {
               existingProduct[0].id,
               {
                 data: {
-                  precioBase: parseFloat(precioFinal), // Convertir precio a float
-                  stock: parseInt(stock, 10), // Convertir stock a entero
+                  precioBase: precio,
+                  stock: stock,
                 },
               }
             )
 
-            strapi.log.info(`✅ Producto actualizado: ${codigo}`)
+            strapi.log.info(`✅ Producto actualizado: ${slug}`)
           } else {
-            strapi.log.warn(`⚠️ Producto no encontrado: ${codigo}`)
+            strapi.log.warn(`⚠️ Producto no encontrado: ${slug}`)
           }
         }
 
-        strapi.log.info("🎯 Actualización masiva completada con éxito.")
+        strapi.log.info("🎯 Actualización masiva desde Excel completada.")
       } catch (error) {
-        strapi.log.error("❌ Error procesando el CSV:", error)
+        strapi.log.error("❌ Error procesando el archivo Excel:", error)
       }
     } else {
-      strapi.log.error("❌ No se encontró un archivo CSV en el evento.")
+      strapi.log.error("❌ No se encontró un archivo válido en el evento.")
     }
   },
 }

@@ -13,7 +13,8 @@
   "pluginOptions": {},
   "attributes": {
     "nombreProducto": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "slug": {
       "type": "uid",
@@ -39,11 +40,13 @@
     },
     "precioBase": {
       "type": "decimal",
-      "min": 0
+      "min": 0,
+      "required": true
     },
     "stock": {
       "type": "integer",
-      "min": 0
+      "min": 0,
+      "required": true
     },
     "descuentoPorMayor": {
       "displayName": "descuentoPorMayor",

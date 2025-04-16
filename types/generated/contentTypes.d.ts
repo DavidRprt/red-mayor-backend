@@ -739,8 +739,9 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     marca: Schema.Attribute.Relation<'manyToOne', 'api::marca.marca'>;
-    nombreProducto: Schema.Attribute.String;
+    nombreProducto: Schema.Attribute.String & Schema.Attribute.Required;
     precioBase: Schema.Attribute.Decimal &
+      Schema.Attribute.Required &
       Schema.Attribute.SetMinMax<
         {
           min: 0;
@@ -750,6 +751,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     slug: Schema.Attribute.UID<'nombreProducto'>;
     stock: Schema.Attribute.Integer &
+      Schema.Attribute.Required &
       Schema.Attribute.SetMinMax<
         {
           min: 0;
