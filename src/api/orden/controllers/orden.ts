@@ -148,14 +148,14 @@ export default factories.createCoreController(
             }
           )
 
-       productosProcesados.push({
-         slug: producto.slug, 
-         nombreProducto: producto.nombreProducto, 
-         cantidadSolicitada,
-         cantidadFinal,
-         precioUnidad: producto.precioBase,
-         precioConDescuento,
-       })
+          productosProcesados.push({
+            slug: producto.slug,
+            nombreProducto: producto.nombreProducto,
+            cantidadSolicitada,
+            cantidadFinal,
+            precioUnidad: producto.precioBase,
+            precioConDescuento,
+          })
         }
         const fecha = new Date()
         const fechaFormateada = `${fecha.getDate().toString().padStart(2, "0")}/${(
@@ -224,7 +224,7 @@ export default factories.createCoreController(
 
           // Enviar un email al administrador con los detalles de la venta
           await strapi.plugins["email"].services.email.send({
-            to: "contacto@redxmayor.com",
+            to: ["contacto@redxmayor.com", "davirapo@gmail.com"],
             from: strapi.config.get("plugin.email.settings.defaultFrom"),
             subject: "Nueva venta registrada en RedXMayor",
             html: `
