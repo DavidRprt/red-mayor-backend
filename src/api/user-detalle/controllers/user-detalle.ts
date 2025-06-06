@@ -45,6 +45,7 @@ module.exports = createCoreController(
 
         const response = {
           id: userDetails.id,
+          documentId: userDetails.user.documentId,
           razonSocial: userDetails.razonSocial,
           CUIT: userDetails.CUIT,
           tipoUsuario: userDetails.tipoUsuario,
