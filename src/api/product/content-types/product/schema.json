@@ -36,7 +36,7 @@
     },
     "activo": {
       "type": "boolean",
-      "default": true
+      "default": false
     },
     "precioBase": {
       "type": "decimal",
@@ -78,6 +78,18 @@
       "relation": "manyToOne",
       "target": "api::marca.marca",
       "inversedBy": "productos"
+    },
+    "combos": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::combo.combo",
+      "mappedBy": "productos"
+    },
+    "combo": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::combo.combo",
+      "mappedBy": "productoGratis"
     }
   }
 }

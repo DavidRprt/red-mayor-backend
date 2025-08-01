@@ -13,54 +13,120 @@ export default factories.createCoreController(
       }
 
       const productosValidados = []
-      let totalDiscountedPrice = 0 // Precio total con descuentos aplicados
+      let totalDiscountedPrice = 0
 
       for (const item of items) {
-        const producto = await strapi.db.query("api::product.product").findOne({
+        console.log("Procesando item:", item)
+
+        // 1. Buscar primero en productos normales
+        let producto = await strapi.db.query("api::product.product").findOne({
           where: { documentId: item.id },
           populate: ["descuentoPorMayor"],
         })
 
+        let esCombo = false
+
+        // 2. Si no existe producto, buscar en combos
         if (!producto) {
+          const combo = await strapi.db.query("api::combo.combo").findOne({
+            where: { documentId: item.id },
+            populate: ["productos"],
+          })
+
+          if (combo) {
+            esCombo = true
+            console.log("Combo detectado:", combo)
+
+            // Calcular precio del combo usando metadata.detalleCombo
+            const detalleCombo = item.metadata?.detalleCombo || {}
+            console.log("Detalle del combo:", detalleCombo)
+
+            let precioCombo = 0
+            for (const [prodId, cantidad] of Object.entries(detalleCombo)) {
+              const prodInterno = await strapi.db
+                .query("api::product.product")
+                .findOne({
+                  where: { id: parseInt(prodId) },
+                })
+
+              if (prodInterno) {
+                console.log(
+                  `Producto interno ${prodId}: precio ${prodInterno.precioBase}, cantidad ${cantidad}`
+                )
+                precioCombo += (prodInterno.precioBase || 0) * Number(cantidad)
+              }
+            }
+
+            // Crear objeto simulado para el combo
+            producto = {
+              ...combo,
+              precioBase: precioCombo,
+              stock: 9999,
+              nombre: combo.Nombre,
+            }
+          }
+        }
+
+        // 3. Si no encontró ni producto ni combo, continuar
+        if (!producto) {
+          console.log("Producto/Combo no encontrado para:", item.id)
           continue
         }
 
-        // Asegúrate de que stock no sea null
-        const stockDisponible = producto.stock || 0 // Si el stock es null, asignamos 0
+        // Stock disponible
+        const stockDisponible = esCombo ? 9999 : producto.stock || 0
         const stockOrden = Math.min(item.quantity, stockDisponible)
 
-        // Calcular precios
-        const basePrice = producto.precioBase // Precio sin descuento
-        let discountedPrice = basePrice // Por defecto, igual al precio base
+        // Precio base
+        const basePrice = producto.precioBase || 0
 
-        // Verificar y calcular el descuento por mayor
-        const descuento = producto.descuentoPorMayor
-
-        if (descuento?.activo && stockOrden >= descuento.cantidadMinima) {
+        // Descuento (solo para productos normales)
+        let discountedPrice = basePrice
+        if (
+          !esCombo &&
+          producto.descuentoPorMayor?.activo &&
+          stockOrden >= producto.descuentoPorMayor.cantidadMinima
+        ) {
           discountedPrice =
-            basePrice * (1 - descuento.porcentajeDescuento / 100)
+            basePrice *
+            (1 - producto.descuentoPorMayor.porcentajeDescuento / 100)
         }
 
-        // Sumar al total con descuento
+        // Acumular total
         totalDiscountedPrice += discountedPrice * stockOrden
 
-        // Agregar producto validado
+        // --- GENERAR ID COMPUESTO SI ES COMBO ---
+        let idCompuesto = producto.documentId
+        if (esCombo) {
+          const detalle = item.metadata?.detalleCombo || {}
+          if (Object.keys(detalle).length > 0) {
+            const detalleString = Object.entries(detalle)
+              .map(([prodId, cant]) => `${prodId}:${cant}`)
+              .join("|")
+            idCompuesto = `combo-${producto.id}|${detalleString}`
+          }
+        }
+
+        // Agregar producto validado al array
         productosValidados.push({
-          id: producto.id, // ID del producto
-          documentId: producto.documentId, // Document ID del producto
-          name: producto.nombre,
+          id: esCombo ? idCompuesto : producto.documentId,
+          documentId: producto.documentId,
+          name: producto.nombre || producto.nombreProducto,
           requestedStock: item.quantity,
           stockInOrder: stockOrden,
           availableStock: stockDisponible,
-          basePrice, // Precio sin descuento
-          discountedPrice, // Precio con descuento aplicado
+          basePrice,
+          discountedPrice,
         })
       }
+
+      console.log("Productos validados:", productosValidados)
+      console.log("Total con descuentos:", totalDiscountedPrice)
 
       const response = {
         message: "Verificación completada con éxito.",
         validatedProducts: productosValidados,
-        totalDiscountedPrice, // Precio total con descuentos aplicados
+        totalDiscountedPrice,
       }
 
       return ctx.send(response, 200)

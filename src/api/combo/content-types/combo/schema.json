@@ -1,0 +1,47 @@
+{
+  "kind": "collectionType",
+  "collectionName": "combos",
+  "info": {
+    "singularName": "combo",
+    "pluralName": "combos",
+    "displayName": "Combo"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Nombre": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "Descripcion": {
+      "type": "text"
+    },
+    "productos": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product.product",
+      "inversedBy": "combos"
+    },
+    "cantidadMinima": {
+      "type": "integer",
+      "required": true
+    },
+    "productoGratis": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::product.product",
+      "inversedBy": "combo"
+    },
+    "cantidadGratis": {
+      "type": "integer",
+      "default": 1
+    },
+    "Activo": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

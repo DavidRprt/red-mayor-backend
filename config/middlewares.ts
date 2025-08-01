@@ -22,7 +22,7 @@ module.exports = [
         "http://localhost:3000", // Para desarrollo local
         "https://www.redxmayor.com", // Para producción
       ],
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       headers: ["Content-Type", "Authorization"],
       credentials: true, // Permitir envío de cookies
     },

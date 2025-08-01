@@ -436,6 +436,42 @@ export interface ApiCategoryCategory extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiComboCombo extends Struct.CollectionTypeSchema {
+  collectionName: 'combos';
+  info: {
+    displayName: 'Combo';
+    pluralName: 'combos';
+    singularName: 'combo';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    Activo: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    cantidadGratis: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<1>;
+    cantidadMinima: Schema.Attribute.Integer & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    Descripcion: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::combo.combo'> &
+      Schema.Attribute.Private;
+    Nombre: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    productoGratis: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::product.product'
+    >;
+    productos: Schema.Attribute.Relation<'manyToMany', 'api::product.product'>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiCuponCupon extends Struct.CollectionTypeSchema {
   collectionName: 'cupones';
   info: {
@@ -715,8 +751,10 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    activo: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    activo: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     cantidadPorCaja: Schema.Attribute.Integer;
+    combo: Schema.Attribute.Relation<'oneToOne', 'api::combo.combo'>;
+    combos: Schema.Attribute.Relation<'manyToMany', 'api::combo.combo'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1388,6 +1426,7 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::actualizacion.actualizacion': ApiActualizacionActualizacion;
       'api::category.category': ApiCategoryCategory;
+      'api::combo.combo': ApiComboCombo;
       'api::cupon.cupon': ApiCuponCupon;
       'api::direccion.direccion': ApiDireccionDireccion;
       'api::formulario.formulario': ApiFormularioFormulario;
