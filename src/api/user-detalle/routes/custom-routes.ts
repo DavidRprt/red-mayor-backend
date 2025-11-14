@@ -9,5 +9,14 @@ module.exports = {
         policies: [],
       },
     },
+    {
+      method: "PUT",
+      path: "/user-detalle/update-by-user",
+      handler: "user-detalle.updateByUser",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 }
