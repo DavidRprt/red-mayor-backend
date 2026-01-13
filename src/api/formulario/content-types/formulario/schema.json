@@ -25,6 +25,14 @@
     },
     "phone": {
       "type": "string"
+    },
+    "negocio": {
+      "type": "string"
+    },
+    "tipoFormulario": {
+      "type": "enumeration",
+      "enum": ["contacto", "vender"],
+      "default": "contacto"
     }
   }
 }

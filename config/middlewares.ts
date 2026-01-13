@@ -21,6 +21,7 @@ module.exports = [
       origin: [
         "http://localhost:3000", // Para desarrollo local
         "https://www.redxmayor.com", // Para producción
+        "https://red-mayor-front-prueba.onrender.com"
       ],
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       headers: ["Content-Type", "Authorization"],

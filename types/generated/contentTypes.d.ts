@@ -602,8 +602,11 @@ export interface ApiFormularioFormulario extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     message: Schema.Attribute.Text & Schema.Attribute.Required;
     name: Schema.Attribute.String & Schema.Attribute.Required;
+    negocio: Schema.Attribute.String;
     phone: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
+    tipoFormulario: Schema.Attribute.Enumeration<['contacto', 'vender']> &
+      Schema.Attribute.DefaultTo<'contacto'>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
