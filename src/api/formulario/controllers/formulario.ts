@@ -42,14 +42,35 @@ export default factories.createCoreController(
           from: strapi.config.get("plugin.email.settings.defaultFrom"),
           subject: `Nuevo contacto - ${tipoFormulario === "vender" ? "Quiere vender" : "Consulta"}`,
           html: `
-          <h1>Se recibió un nuevo contacto</h1>
-          <p><strong>Tipo:</strong> ${tipoFormulario === "vender" ? "Quiere vender en la plataforma" : "Consulta general"}</p>
-          <p><strong>Nombre:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Teléfono:</strong> ${phone || "No especificado"}</p>
-          <p><strong>Negocio:</strong> ${negocio || "No especificado"}</p>
-          <p><strong>Mensaje:</strong></p>
-          <p>${message || "No especificado"}</p>
+<table style="width:100%; background-color:#f4f4f8; padding:20px; font-family:Arial,sans-serif;">
+  <tr>
+    <td>
+      <table style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+        <tr>
+          <td style="background-color:#8f9fd1; padding:20px; text-align:center;">
+            <h1 style="color:#ffffff; margin:0; font-size:24px;">Nuevo contacto recibido</h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px; color:#1a1a36;">
+            <p style="font-size:16px; margin:0 0 8px 0;"><strong>Tipo:</strong> ${tipoFormulario === "vender" ? "Quiere vender en la plataforma" : "Consulta general"}</p>
+            <p style="font-size:16px; margin:0 0 8px 0;"><strong>Nombre:</strong> ${name}</p>
+            <p style="font-size:16px; margin:0 0 8px 0;"><strong>Email:</strong> ${email}</p>
+            <p style="font-size:16px; margin:0 0 8px 0;"><strong>Teléfono:</strong> ${phone || "No especificado"}</p>
+            <p style="font-size:16px; margin:0 0 8px 0;"><strong>Negocio:</strong> ${negocio || "No especificado"}</p>
+            <p style="font-size:16px; margin:12px 0 8px 0;"><strong>Mensaje:</strong></p>
+            <p style="font-size:16px; margin:0; padding:12px; background:#f4f4f8; border-radius:6px; border-left:4px solid #8f9fd1;">${message || "No especificado"}</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#1a1a36; padding:15px; text-align:center; font-size:14px; color:#8f9fd1;">
+            <p style="margin:0;">RedXMayor - Panel de administración</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
           `,
         })
 
@@ -59,15 +80,36 @@ export default factories.createCoreController(
           from: strapi.config.get("plugin.email.settings.defaultFrom"),
           subject: "Ya recibimos tu mensaje",
           html: `
-          <h1>Gracias por contactarnos</h1>
-          <p>Hola ${name},</p>
-          <p>${
-            tipoFormulario === "vender"
-              ? "Hemos recibido tu solicitud para vender en nuestra plataforma y nuestro equipo se pondrá en contacto contigo pronto."
-              : "Hemos recibido tu consulta y nuestro equipo se pondrá en contacto contigo pronto."
-          }</p>
-          ${message ? `<p>Tu mensaje:</p><blockquote>${message}</blockquote>` : ""}
-          <p>¡Gracias por confiar en nosotros!</p>
+<table style="width:100%; background-color:#f4f4f8; padding:20px; font-family:Arial,sans-serif;">
+  <tr>
+    <td>
+      <table style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+        <tr>
+          <td style="background-color:#8f9fd1; padding:20px; text-align:center;">
+            <h1 style="color:#ffffff; margin:0; font-size:24px;">¡Gracias por contactarnos!</h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px; color:#1a1a36;">
+            <p style="font-size:16px; margin:0 0 12px 0;">Hola <strong>${name}</strong>,</p>
+            <p style="font-size:16px; margin:0 0 16px 0;">${
+              tipoFormulario === "vender"
+                ? "Hemos recibido tu solicitud para vender en nuestra plataforma y nuestro equipo se pondrá en contacto contigo pronto."
+                : "Hemos recibido tu consulta y nuestro equipo se pondrá en contacto contigo pronto."
+            }</p>
+            ${message ? `<p style="font-size:16px; margin:0 0 8px 0;">Tu mensaje:</p><p style="font-size:16px; margin:0; padding:12px; background:#f4f4f8; border-radius:6px; border-left:4px solid #8f9fd1;">${message}</p>` : ""}
+            <p style="font-size:16px; margin:16px 0 0 0;">¡Gracias por confiar en nosotros!</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#1a1a36; padding:15px; text-align:center; font-size:14px; color:#8f9fd1;">
+            <p style="margin:0;">Si tienes alguna duda, responde a este correo o contáctanos por WhatsApp.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
           `,
         })
 

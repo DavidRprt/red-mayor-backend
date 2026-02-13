@@ -291,32 +291,29 @@ export default factories.createCoreController(
           from: strapi.config.get("plugin.email.settings.defaultFrom"),
           subject: "¡Gracias por tu compra en RedXMayor!",
           html: `
-<table style="width:100%; background-color:#f9f9f9; padding:20px; font-family:Arial,sans-serif;">
+<table style="width:100%; background-color:#f4f4f8; padding:20px; font-family:Arial,sans-serif;">
   <tr>
     <td>
-      <!-- Contenedor principal -->
       <table style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
-        <!-- Header -->
         <tr>
-          <td style="background-color:#1a1a1a; padding:20px; text-align:center;">
-            <h1 style="color:#00b0f0; margin:0; font-size:24px;">¡Gracias por tu compra, ${usuario.username}!</h1>
+          <td style="background-color:#8f9fd1; padding:20px; text-align:center;">
+            <h1 style="color:#ffffff; margin:0; font-size:24px;">¡Gracias por tu compra, ${usuario.username}!</h1>
           </td>
         </tr>
-        <!-- Contenido -->
         <tr>
-          <td style="padding:20px; color:#333333;">
+          <td style="padding:20px; color:#1a1a36;">
             <p style="font-size:16px; margin:0 0 10px 0;">Fecha de la compra: <strong>${fechaFormateada}</strong></p>
             <p style="font-size:16px; margin:0 0 20px 0;">Hemos recibido tu pedido y lo estamos procesando. Pronto nos pondremos en contacto contigo.</p>
-            
-            <h2 style="font-size:20px; margin:0 0 10px 0; color:#1a1a1a;">Resumen de tu pedido:</h2>
-            <ul style="padding-left:20px; margin:0 0 20px 0; font-size:16px; color:#444;">
+
+            <h2 style="font-size:20px; margin:0 0 10px 0; color:#1a1a36;">Resumen de tu pedido:</h2>
+            <ul style="padding-left:20px; margin:0 0 20px 0; font-size:16px; color:#1a1a36;">
               ${productosProcesados
                 .map(
                   (item) => `
                     <li style="margin-bottom:8px;">
                       <strong>${item.nombreProducto}</strong><br>
-                      Cantidad: ${item.cantidadFinal} - 
-                      Precio: <span style="color:#00b0f0; font-weight:bold;">$${item.precioConDescuento.toFixed(2)}</span>
+                      Cantidad: ${item.cantidadFinal} -
+                      Precio: <span style="color:#8f9fd1; font-weight:bold;">$${item.precioConDescuento.toFixed(2)}</span>
                     </li>`,
                 )
                 .join("")}
@@ -325,9 +322,8 @@ export default factories.createCoreController(
             <p style="font-size:16px; margin:20px 0 0 0;">¡Gracias por confiar en nosotros!</p>
           </td>
         </tr>
-        <!-- Footer -->
         <tr>
-          <td style="background:#f1f1f1; padding:15px; text-align:center; font-size:14px; color:#666;">
+          <td style="background:#1a1a36; padding:15px; text-align:center; font-size:14px; color:#8f9fd1;">
             <p style="margin:0;">Si tienes alguna duda, responde a este correo o contáctanos por WhatsApp.</p>
           </td>
         </tr>
