@@ -44,7 +44,7 @@ export default factories.createCoreController(
 
         if (!direccionValida)
           return ctx.badRequest(
-            "La dirección no pertenece al usuario autenticado."
+            "La dirección no pertenece al usuario autenticado.",
           )
 
         const detallesUsuario = await strapi.db
@@ -62,7 +62,7 @@ export default factories.createCoreController(
               metodoPago,
               observaciones,
             },
-          }
+          },
         )
 
         const porcentajeDescuentoCupon = await validarCupon(cupon)
@@ -93,7 +93,7 @@ export default factories.createCoreController(
 
             if (!producto || !producto.activo) {
               return ctx.badRequest(
-                `El producto con ID ${item.id} no está disponible.`
+                `El producto con ID ${item.id} no está disponible.`,
               )
             }
 
@@ -102,7 +102,7 @@ export default factories.createCoreController(
 
             if (cantidadFinal === 0) {
               return ctx.badRequest(
-                `El producto ${producto.nombreProducto} no tiene stock disponible.`
+                `El producto ${producto.nombreProducto} no tiene stock disponible.`,
               )
             }
 
@@ -142,7 +142,7 @@ export default factories.createCoreController(
                   precioUnidad: producto.precioBase,
                   precioConDescuento,
                 },
-              }
+              },
             )
 
             productosProcesados.push({
@@ -170,7 +170,7 @@ export default factories.createCoreController(
 
             if (!combo) {
               return ctx.badRequest(
-                `Combo con documentId ${item.documentId} no encontrado.`
+                `Combo con documentId ${item.documentId} no encontrado.`,
               )
             }
 
@@ -214,7 +214,7 @@ export default factories.createCoreController(
                   precioUnidad: precioCombo,
                   precioConDescuento: precioCombo,
                 },
-              }
+              },
             )
 
             detallesCombos.push({
@@ -251,10 +251,10 @@ export default factories.createCoreController(
                 ${combo.productosInternos
                   .map(
                     (prod) =>
-                      `<li>${prod.nombre} (${prod.slug}) - Cantidad: ${prod.cantidad}</li>`
+                      `<li>${prod.nombre} (${prod.slug}) - Cantidad: ${prod.cantidad}</li>`,
                   )
                   .join("")}
-              </ul>`
+              </ul>`,
           )
           .join("<hr>")
 
@@ -274,8 +274,8 @@ export default factories.createCoreController(
                 .map(
                   (item) =>
                     `<li>${item.nombreProducto} - Cantidad: ${item.cantidadFinal} - Precio: $${item.precioConDescuento.toFixed(
-                      2
-                    )}</li>`
+                      2,
+                    )}</li>`,
                 )
                 .join("")}
             </ul>
@@ -317,7 +317,7 @@ export default factories.createCoreController(
                       <strong>${item.nombreProducto}</strong><br>
                       Cantidad: ${item.cantidadFinal} - 
                       Precio: <span style="color:#00b0f0; font-weight:bold;">$${item.precioConDescuento.toFixed(2)}</span>
-                    </li>`
+                    </li>`,
                 )
                 .join("")}
             </ul>
@@ -348,5 +348,5 @@ export default factories.createCoreController(
         return ctx.internalServerError("Ocurrió un error al procesar la orden.")
       }
     },
-  })
+  }),
 )

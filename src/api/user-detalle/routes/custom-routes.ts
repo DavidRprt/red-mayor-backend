@@ -18,5 +18,14 @@ module.exports = {
         middlewares: [],
       },
     },
+    {
+      method: "POST",
+      path: "/user-detalle/upload-photo",
+      handler: "user-detalle.uploadPhoto",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 }

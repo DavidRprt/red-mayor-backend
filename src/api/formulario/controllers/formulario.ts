@@ -12,9 +12,9 @@ export default factories.createCoreController(
         ctx.request.body || {}
 
       // Validar que los datos obligatorios están presentes
-      if (!name || !email || !message) {
+      if (!name || !email) {
         return ctx.badRequest(
-          "Faltan datos obligatorios: nombre, correo electrónico o mensaje."
+          "Faltan datos obligatorios: nombre y correo electrónico.",
         )
       }
 
@@ -31,7 +31,7 @@ export default factories.createCoreController(
               negocio,
               tipoFormulario: tipoFormulario || "contacto",
             },
-          }
+          },
         )
 
         const adminEmail = "contacto@redxmayor.com"
@@ -49,7 +49,7 @@ export default factories.createCoreController(
           <p><strong>Teléfono:</strong> ${phone || "No especificado"}</p>
           <p><strong>Negocio:</strong> ${negocio || "No especificado"}</p>
           <p><strong>Mensaje:</strong></p>
-          <p>${message}</p>
+          <p>${message || "No especificado"}</p>
           `,
         })
 
@@ -66,8 +66,7 @@ export default factories.createCoreController(
               ? "Hemos recibido tu solicitud para vender en nuestra plataforma y nuestro equipo se pondrá en contacto contigo pronto."
               : "Hemos recibido tu consulta y nuestro equipo se pondrá en contacto contigo pronto."
           }</p>
-          <p>Tu mensaje:</p>
-          <blockquote>${message}</blockquote>
+          ${message ? `<p>Tu mensaje:</p><blockquote>${message}</blockquote>` : ""}
           <p>¡Gracias por confiar en nosotros!</p>
           `,
         })
@@ -80,9 +79,9 @@ export default factories.createCoreController(
       } catch (error) {
         strapi.log.error("Error al procesar el formulario:", error)
         return ctx.internalServerError(
-          "Hubo un problema al procesar el formulario."
+          "Hubo un problema al procesar el formulario.",
         )
       }
     },
-  })
+  }),
 )

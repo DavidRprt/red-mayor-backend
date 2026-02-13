@@ -579,6 +579,39 @@ export interface ApiDireccionDireccion extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiFavoritoFavorito extends Struct.CollectionTypeSchema {
+  collectionName: 'favoritos';
+  info: {
+    description: 'Productos favoritos de usuarios';
+    displayName: 'Favorito';
+    pluralName: 'favoritos';
+    singularName: 'favorito';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::favorito.favorito'
+    > &
+      Schema.Attribute.Private;
+    producto: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    users_permissions_user: Schema.Attribute.Relation<
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiFormularioFormulario extends Struct.CollectionTypeSchema {
   collectionName: 'formularios';
   info: {
@@ -892,6 +925,7 @@ export interface ApiUserDetalleUserDetalle extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     CUIT: Schema.Attribute.String & Schema.Attribute.Required;
+    foto: Schema.Attribute.Media<'images'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1432,6 +1466,7 @@ declare module '@strapi/strapi' {
       'api::combo.combo': ApiComboCombo;
       'api::cupon.cupon': ApiCuponCupon;
       'api::direccion.direccion': ApiDireccionDireccion;
+      'api::favorito.favorito': ApiFavoritoFavorito;
       'api::formulario.formulario': ApiFormularioFormulario;
       'api::marca.marca': ApiMarcaMarca;
       'api::orden-producto.orden-producto': ApiOrdenProductoOrdenProducto;
