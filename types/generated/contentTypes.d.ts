@@ -814,6 +814,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     marca: Schema.Attribute.Relation<'manyToOne', 'api::marca.marca'>;
     nombreProducto: Schema.Attribute.String & Schema.Attribute.Required;
+    Popular: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     precioBase: Schema.Attribute.Decimal &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMax<
@@ -836,6 +837,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       'manyToOne',
       'api::subcategoria.subcategoria'
     >;
+    Subtitulo: Schema.Attribute.Text;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

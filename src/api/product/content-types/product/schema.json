@@ -90,6 +90,13 @@
       "relation": "oneToOne",
       "target": "api::combo.combo",
       "mappedBy": "productoGratis"
+    },
+    "Popular": {
+      "type": "boolean",
+      "default": false
+    },
+    "Subtitulo": {
+      "type": "text"
     }
   }
 }
