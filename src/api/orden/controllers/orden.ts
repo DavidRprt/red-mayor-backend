@@ -88,7 +88,6 @@ export default factories.createCoreController(
               .query("api::product.product")
               .findOne({
                 where: whereClause,
-                populate: ["descuentoPorMayor"],
               })
 
             if (!producto || !producto.activo) {
@@ -108,13 +107,10 @@ export default factories.createCoreController(
 
             // Descuento
             let precioConDescuento = producto.precioBase
-            if (
-              producto.descuentoPorMayor?.activo &&
-              cantidadFinal >= producto.descuentoPorMayor.cantidadMinima
-            ) {
+            if (producto.porcentajeDescuento > 0) {
               precioConDescuento =
                 producto.precioBase *
-                (1 - producto.descuentoPorMayor.porcentajeDescuento / 100)
+                (1 - producto.porcentajeDescuento / 100)
             }
 
             if (

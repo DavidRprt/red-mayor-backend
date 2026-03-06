@@ -97,6 +97,14 @@
     },
     "Subtitulo": {
       "type": "text"
+    },
+    "unidadMinima": {
+      "type": "integer"
+    },
+    "porcentajeDescuento": {
+      "type": "integer",
+      "default": 0,
+      "max": 100
     }
   }
 }

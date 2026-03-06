@@ -815,6 +815,14 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     marca: Schema.Attribute.Relation<'manyToOne', 'api::marca.marca'>;
     nombreProducto: Schema.Attribute.String & Schema.Attribute.Required;
     Popular: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    porcentajeDescuento: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 100;
+        },
+        number
+      > &
+      Schema.Attribute.DefaultTo<0>;
     precioBase: Schema.Attribute.Decimal &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMax<
@@ -838,6 +846,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       'api::subcategoria.subcategoria'
     >;
     Subtitulo: Schema.Attribute.Text;
+    unidadMinima: Schema.Attribute.Integer;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

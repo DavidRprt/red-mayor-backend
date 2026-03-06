@@ -21,7 +21,6 @@ export default factories.createCoreController(
         // 1. Buscar primero en productos normales
         let producto = await strapi.db.query("api::product.product").findOne({
           where: { documentId: item.id },
-          populate: ["descuentoPorMayor"],
         })
 
         let esCombo = false
@@ -82,14 +81,9 @@ export default factories.createCoreController(
 
         // Descuento (solo para productos normales)
         let discountedPrice = basePrice
-        if (
-          !esCombo &&
-          producto.descuentoPorMayor?.activo &&
-          stockOrden >= producto.descuentoPorMayor.cantidadMinima
-        ) {
+        if (!esCombo && producto.porcentajeDescuento > 0) {
           discountedPrice =
-            basePrice *
-            (1 - producto.descuentoPorMayor.porcentajeDescuento / 100)
+            basePrice * (1 - producto.porcentajeDescuento / 100)
         }
 
         // Acumular total
