@@ -1,7 +1,7 @@
 import { factories } from "@strapi/strapi"
 
 export default factories.createCoreController(
-  "api::product.product",
+  "api::marca.marca",
   ({ strapi }) => ({
     async asignarMarcaAutomatica(ctx) {
       try {
