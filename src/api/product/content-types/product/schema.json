@@ -20,9 +20,6 @@
       "type": "uid",
       "targetField": "nombreProducto"
     },
-    "descripcion": {
-      "type": "text"
-    },
     "imagenes": {
       "type": "media",
       "multiple": true,
@@ -48,16 +45,6 @@
       "min": 0,
       "required": true
     },
-    "descuentoPorMayor": {
-      "displayName": "descuentoPorMayor",
-      "type": "component",
-      "repeatable": false,
-      "component": "descuentos.descuento-por-mayor"
-    },
-    "homepage": {
-      "type": "boolean",
-      "default": false
-    },
     "subcategoria": {
       "type": "relation",
       "relation": "manyToOne",
@@ -78,18 +65,6 @@
       "relation": "manyToOne",
       "target": "api::marca.marca",
       "inversedBy": "productos"
-    },
-    "combos": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::combo.combo",
-      "mappedBy": "productos"
-    },
-    "combo": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::combo.combo",
-      "mappedBy": "productoGratis"
     },
     "Popular": {
       "type": "boolean",

@@ -19,21 +19,9 @@
     "Descripcion": {
       "type": "text"
     },
-    "productos": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::product.product",
-      "inversedBy": "combos"
-    },
     "cantidadMinima": {
       "type": "integer",
       "required": true
-    },
-    "productoGratis": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::product.product",
-      "inversedBy": "combo"
     },
     "cantidadGratis": {
       "type": "integer",

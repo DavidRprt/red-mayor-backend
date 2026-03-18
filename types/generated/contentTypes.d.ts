@@ -460,11 +460,6 @@ export interface ApiComboCombo extends Struct.CollectionTypeSchema {
     Nombre: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.Unique;
-    productoGratis: Schema.Attribute.Relation<
-      'oneToOne',
-      'api::product.product'
-    >;
-    productos: Schema.Attribute.Relation<'manyToMany', 'api::product.product'>;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -789,19 +784,11 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   attributes: {
     activo: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     cantidadPorCaja: Schema.Attribute.Integer;
-    combo: Schema.Attribute.Relation<'oneToOne', 'api::combo.combo'>;
-    combos: Schema.Attribute.Relation<'manyToMany', 'api::combo.combo'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    descripcion: Schema.Attribute.Text;
     descripcionCantidad: Schema.Attribute.Text;
-    descuentoPorMayor: Schema.Attribute.Component<
-      'descuentos.descuento-por-mayor',
-      false
-    >;
     detalles: Schema.Attribute.Text;
-    homepage: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     imagenes: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios',
       true
