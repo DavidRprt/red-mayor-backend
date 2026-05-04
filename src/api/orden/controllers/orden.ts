@@ -144,6 +144,7 @@ export default factories.createCoreController(
             productosProcesados.push({
               slug: producto.slug,
               nombreProducto: producto.nombreProducto,
+              subtitulo: producto.Subtitulo || null,
               cantidadFinal,
               precioUnidad: producto.precioBase,
               precioConDescuento,
@@ -269,9 +270,7 @@ export default factories.createCoreController(
               ${productosProcesados
                 .map(
                   (item) =>
-                    `<li>${item.nombreProducto} - Cantidad: ${item.cantidadFinal} - Precio: $${item.precioConDescuento.toFixed(
-                      2,
-                    )}</li>`,
+                    `<li><strong>${item.slug}</strong> - ${item.nombreProducto}${item.subtitulo ? ` - ${item.subtitulo}` : ""} - Cantidad: ${item.cantidadFinal} - Precio: $${item.precioConDescuento.toFixed(2)}</li>`,
                 )
                 .join("")}
             </ul>
@@ -307,7 +306,7 @@ export default factories.createCoreController(
                 .map(
                   (item) => `
                     <li style="margin-bottom:8px;">
-                      <strong>${item.nombreProducto}</strong><br>
+                      <strong>${item.nombreProducto}</strong>${item.subtitulo ? `<br><span style="color:#666;">${item.subtitulo}</span>` : ""}<br>
                       Cantidad: ${item.cantidadFinal} -
                       Precio: <span style="color:#8f9fd1; font-weight:bold;">$${item.precioConDescuento.toFixed(2)}</span>
                     </li>`,
