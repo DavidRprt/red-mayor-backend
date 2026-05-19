@@ -50,6 +50,15 @@
     },
     "observaciones": {
       "type": "text"
+    },
+    "linkFactura": {
+      "type": "string"
+    },
+    "numeroFactura": {
+      "type": "string"
+    },
+    "caeFactura": {
+      "type": "string"
     }
   }
 }

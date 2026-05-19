@@ -70,6 +70,13 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "direccions"
+    },
+    "nombre": {
+      "type": "string"
+    },
+    "eliminado": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

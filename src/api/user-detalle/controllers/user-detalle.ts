@@ -54,7 +54,7 @@ module.exports = createCoreController(
           telefono: userDetails.telefono,
           username: userDetails.user.username,
           email: userDetails.user.email,
-          direcciones: userDetails.user.direccions,
+          direcciones: (userDetails.user.direccions || []).filter((d: any) => !d.eliminado),
           foto: userDetails.foto?.url || null,
         }
 

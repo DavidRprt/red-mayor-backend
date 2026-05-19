@@ -526,12 +526,14 @@ export interface ApiDireccionDireccion extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetMinMaxLength<{
         minLength: 3;
       }>;
+    eliminado: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::direccion.direccion'
     > &
       Schema.Attribute.Private;
+    nombre: Schema.Attribute.String;
     ordens: Schema.Attribute.Relation<'oneToMany', 'api::orden.orden'>;
     provincia: Schema.Attribute.Enumeration<
       [
@@ -738,6 +740,7 @@ export interface ApiOrdenOrden extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    caeFactura: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -748,12 +751,14 @@ export interface ApiOrdenOrden extends Struct.CollectionTypeSchema {
     estado: Schema.Attribute.Enumeration<
       ['Pendiente', 'Pagado', 'Enviado', 'Completado', 'Cancelado']
     >;
+    linkFactura: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::orden.orden'> &
       Schema.Attribute.Private;
     metodoPago: Schema.Attribute.Enumeration<
       ['Transferencia', 'MercadoPago', 'Convenir']
     >;
+    numeroFactura: Schema.Attribute.String;
     observaciones: Schema.Attribute.Text;
     orden_productos: Schema.Attribute.Relation<
       'oneToMany',

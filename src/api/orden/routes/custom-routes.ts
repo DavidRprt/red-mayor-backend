@@ -9,5 +9,14 @@ module.exports = {
         middlewares: [],
       },
     },
+    {
+      method: "POST",
+      path: "/ordenes/pagar-con-tarjeta",
+      handler: "orden.pagarConTarjeta",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 }
