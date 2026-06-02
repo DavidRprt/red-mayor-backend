@@ -105,6 +105,8 @@ export default factories.createCoreController(
             }
 
             const cantidadSolicitada = item.cantidad
+            if (cantidadSolicitada === 0) continue
+
             const cantidadFinal = Math.min(cantidadSolicitada, producto.stock)
 
             if (cantidadFinal === 0) {
