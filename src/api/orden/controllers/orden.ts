@@ -2,6 +2,13 @@ import { factories } from "@strapi/strapi"
 import { MercadoPagoConfig, Payment as MPPayment } from "mercadopago"
 import { enviarVenta, facturarVenta } from "../../../services/contabilium"
 
+// Lámparas LED tienen IVA reducido del 10.5% (la mitad del 21% estándar)
+function determinarTasaIva(producto: any): number {
+  const sub = producto.subcategoria
+  const esLed = sub?.slug === 'lamparas-led'
+  return esLed ? 10.5 : 21
+}
+
 const mpClient = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN || "",
 })
@@ -96,6 +103,7 @@ export default factories.createCoreController(
               .query("api::product.product")
               .findOne({
                 where: whereClause,
+                populate: { subcategoria: { populate: ['categoria'] } },
               })
 
             if (!producto || !producto.activo) {
@@ -158,6 +166,8 @@ export default factories.createCoreController(
               cantidadFinal,
               precioUnidad: producto.precioBase,
               precioConDescuento,
+              porcentajeDescuento: producto.porcentajeDescuento || 0,
+              tasaIva: determinarTasaIva(producto),
             })
           } else {
             // === Combo ===
@@ -237,6 +247,8 @@ export default factories.createCoreController(
               cantidadFinal: item.cantidad,
               precioUnidad: precioCombo,
               precioConDescuento: precioCombo,
+              porcentajeDescuento: 0,
+              tasaIva: 21,
             })
           }
         }
@@ -267,7 +279,7 @@ export default factories.createCoreController(
 
         // === Mail al ADMIN ===
         await strapi.plugins["email"].services.email.send({
-          to: ["contacto@redxmayor.com", "davirapo@gmail.com"],
+          to: ["contacto@redxmayor.com", "davirapo@gmail.com", "jamalsolares@gmail.com", "jamalsolares@redxmayor.com"],
           from: strapi.config.get("plugin.email.settings.defaultFrom"),
           subject: "Nueva venta registrada en RedXMayor",
           html: `
@@ -349,11 +361,14 @@ export default factories.createCoreController(
               metodoPago,
               usuario: { email: usuario.email, username: usuario.username },
               detallesUsuario,
+              cuponPorcentaje: porcentajeDescuentoCupon ?? undefined,
               productos: productosProcesados.map((item) => ({
                 nombre: item.nombreProducto,
                 slug: item.slug,
                 cantidad: item.cantidadFinal,
-                precioConDescuento: item.precioConDescuento,
+                precioBase: item.precioUnidad,
+                porcentajeDescuento: item.porcentajeDescuento,
+                tasaIva: item.tasaIva,
               })),
               observaciones: observaciones || "",
             })
@@ -420,7 +435,7 @@ export default factories.createCoreController(
 
           const producto = await strapi.db
             .query("api::product.product")
-            .findOne({ where: whereClause })
+            .findOne({ where: whereClause, populate: { subcategoria: { populate: ['categoria'] } } })
 
           if (!producto || !producto.activo)
             return ctx.badRequest(`Producto ${item.id} no disponible.`)
@@ -437,7 +452,13 @@ export default factories.createCoreController(
           }
 
           totalReal += precioConDescuento * cantidadFinal
-          productosProcesados.push({ producto, cantidadFinal, precioConDescuento })
+          productosProcesados.push({
+            producto,
+            cantidadFinal,
+            precioConDescuento,
+            porcentajeDescuento: producto.porcentajeDescuento || 0,
+            tasaIva: determinarTasaIva(producto),
+          })
         }
 
         // 4. Validar que el total del frontend coincida con el recalculado
@@ -528,11 +549,14 @@ export default factories.createCoreController(
               metodoPago: "MercadoPago",
               usuario: { email: usuario.email, username: usuario.username },
               detallesUsuario,
-              productos: productosProcesados.map(({ producto, cantidadFinal, precioConDescuento }) => ({
+              cuponPorcentaje: porcentajeDescuentoCupon ?? undefined,
+              productos: productosProcesados.map(({ producto, cantidadFinal, porcentajeDescuento, tasaIva }) => ({
                 nombre: producto.nombreProducto,
                 slug: producto.slug,
                 cantidad: cantidadFinal,
-                precioConDescuento,
+                precioBase: producto.precioBase,
+                porcentajeDescuento,
+                tasaIva,
               })),
               observaciones: observaciones || "",
             })
@@ -563,7 +587,7 @@ export default factories.createCoreController(
         const fechaFormateada = `${fecha.getDate().toString().padStart(2, "0")}/${(fecha.getMonth() + 1).toString().padStart(2, "0")}/${fecha.getFullYear()}`
 
         await strapi.plugins["email"].services.email.send({
-          to: ["contacto@redxmayor.com", "davirapo@gmail.com"],
+          to: ["contacto@redxmayor.com", "davirapo@gmail.com", "jamalsolares@gmail.com", "jamalsolares@redxmayor.com"],
           from: strapi.config.get("plugin.email.settings.defaultFrom"),
           subject: "Nueva venta registrada en RedXMayor (Tarjeta)",
           html: `

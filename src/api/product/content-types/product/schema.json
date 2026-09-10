@@ -80,6 +80,15 @@
       "type": "integer",
       "default": 0,
       "max": 100
+    },
+    "pesoGramos": {
+      "type": "integer",
+      "min": 0
+    },
+    "inactivoPorSync": {
+      "type": "boolean",
+      "default": false,
+      "description": "true si la sync de stock con Contabilium desactivó este producto por no encontrarlo. Permite reactivarlo automáticamente sin pisar una desactivación manual."
     }
   }
 }

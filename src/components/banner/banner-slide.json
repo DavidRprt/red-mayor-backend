@@ -1,0 +1,55 @@
+{
+  "collectionName": "components_banner_banner_slides",
+  "info": {
+    "displayName": "Banner Slide",
+    "icon": "images"
+  },
+  "options": {},
+  "attributes": {
+    "imagen": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["images"]
+    },
+    "alt": {
+      "type": "string",
+      "required": true
+    },
+    "activo": {
+      "type": "boolean",
+      "default": true
+    },
+    "fechaInicio": {
+      "type": "date"
+    },
+    "fechaFin": {
+      "type": "date"
+    },
+    "badge": {
+      "type": "string"
+    },
+    "badgeColor": {
+      "type": "string"
+    },
+    "eyebrow": {
+      "type": "string"
+    },
+    "titulo": {
+      "type": "text"
+    },
+    "subtitulo": {
+      "type": "text"
+    },
+    "cta": {
+      "type": "string"
+    },
+    "ctaColor": {
+      "type": "string"
+    },
+    "href": {
+      "type": "string"
+    }
+  },
+  "config": {}
+}

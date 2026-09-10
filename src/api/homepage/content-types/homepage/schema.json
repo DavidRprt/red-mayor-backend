@@ -1,0 +1,21 @@
+{
+  "kind": "singleType",
+  "collectionName": "homepages",
+  "info": {
+    "singularName": "homepage",
+    "pluralName": "homepages",
+    "displayName": "Homepage",
+    "description": "Banners del carrusel principal de la home (1600x500px recomendado)"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "banners": {
+      "type": "component",
+      "component": "banner.banner-slide",
+      "repeatable": true
+    }
+  }
+}

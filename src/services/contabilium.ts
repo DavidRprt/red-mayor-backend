@@ -85,11 +85,14 @@ export interface EnviarVentaParams {
     tipoUsuario?: string
     telefono?: string
   } | null
+  cuponPorcentaje?: number
   productos: {
     nombre: string
     slug: string
     cantidad: number
-    precioConDescuento: number
+    precioBase: number       // precio con IVA incluido (como está en Strapi)
+    porcentajeDescuento: number // % de descuento propio del producto (0 si no tiene)
+    tasaIva: number          // 21 (estándar) o 10.5 (lámparas LED)
   }[]
   observaciones?: string
 }
@@ -118,14 +121,40 @@ export async function enviarVenta(params: EnviarVentaParams): Promise<void> {
     Pais: 'Argentina',
   }
 
-  const items = params.productos.map((p) => ({
-    Codigo: p.slug,
-    Concepto: p.nombre,
-    Cantidad: p.cantidad,
-    PrecioUnitario: Math.round(p.precioConDescuento * 100) / 100,
-    Iva: 21,
-    Bonificacion: 0,
-  }))
+  console.log(
+    `[Contabilium] Calculando precios | Orden: RXM-${params.ordenId} | Cupón: ${params.cuponPorcentaje ?? 0}%`
+  )
+
+  const items = params.productos.map((p) => {
+    // Contabilium agrega IVA por su cuenta → mandamos precio SIN IVA
+    const ivaFactor = 1 + p.tasaIva / 100 // 1.21 o 1.105
+    const precioSinIva = Math.round((p.precioBase / ivaFactor) * 100) / 100
+
+    // Bonificacion: descuento del producto tiene prioridad sobre cupón
+    let bonificacion = 0
+    let motivoBonif = 'sin bonificación'
+    if (p.porcentajeDescuento > 0) {
+      bonificacion = p.porcentajeDescuento
+      motivoBonif = `descuento producto ${p.porcentajeDescuento}%`
+    } else if (params.cuponPorcentaje && params.cuponPorcentaje > 0) {
+      bonificacion = params.cuponPorcentaje
+      motivoBonif = `cupón ${params.cuponPorcentaje}%`
+    }
+
+    console.log(
+      `[Contabilium]   ${p.slug} | Base: $${p.precioBase} | IVA: ${p.tasaIva}% (÷${ivaFactor}) | ` +
+      `SinIVA: $${precioSinIva} | Bonif: ${bonificacion}% (${motivoBonif})`
+    )
+
+    return {
+      Codigo: p.slug,
+      Concepto: p.nombre,
+      Cantidad: p.cantidad,
+      PrecioUnitario: precioSinIva,
+      Iva: p.tasaIva,
+      Bonificacion: bonificacion,
+    }
+  })
 
   const body = {
     IDVentaIntegracion: params.ordenId,
@@ -206,5 +235,68 @@ export async function facturarVenta(ordenId: number | string): Promise<FacturarV
     linkFactura: data?.LinkPublico ?? null,
     numeroFactura: data?.Numero ?? null,
     caeFactura: data?.CAE ?? null,
+  }
+}
+
+// ─────────────────────────────────────────────
+// getStockBySKU
+// ─────────────────────────────────────────────
+
+export interface StockContabilium {
+  stockActual: number
+  stockReservado: number
+  stockConReservas: number
+}
+
+/**
+ * Consulta el stock de un producto por SKU, tomando únicamente el depósito
+ * web (CONTABILIUM_DEPOSITO_WEB) — así no se cuenta como disponible el stock
+ * que Contabilium tiene reservado para otros canales (local físico, etc).
+ * Devuelve null si el SKU no existe en Contabilium.
+ */
+export async function getStockBySKU(sku: string): Promise<StockContabilium | null> {
+  const depositoWeb = process.env.CONTABILIUM_DEPOSITO_WEB
+  if (!depositoWeb) {
+    throw new Error('Contabilium: falta CONTABILIUM_DEPOSITO_WEB en las variables de entorno.')
+  }
+
+  const token = await getToken()
+
+  let response: Response | undefined
+  const REINTENTOS = 3
+  for (let intento = 0; intento < REINTENTOS; intento++) {
+    response = await fetch(
+      `${CONTABILIUM_BASE_URL}/api/inventarios/getStockBySKU?codigo=${encodeURIComponent(sku)}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    if (response.status !== 429) break
+    // Backoff creciente: 1s, 2s, 3s — el límite de Contabilium se resetea cada 10s.
+    await new Promise((resolve) => setTimeout(resolve, 1000 * (intento + 1)))
+  }
+
+  if (!response || response.status === 429) {
+    throw new Error('Contabilium getStockBySKU: rate limit (429)')
+  }
+  if (!response.ok) {
+    return null
+  }
+
+  const data = await response.json() as any
+  if (!data || !data.Codigo) {
+    return null
+  }
+
+  const depositos = Array.isArray(data.stock) ? data.stock : []
+  const deposito = depositos.find((d: any) => d.Codigo === depositoWeb)
+
+  if (!deposito) {
+    console.warn(`[Contabilium] getStockBySKU: SKU ${sku} no tiene depósito "${depositoWeb}" — se toma stock 0.`)
+    return { stockActual: 0, stockReservado: 0, stockConReservas: 0 }
+  }
+
+  return {
+    stockActual: Number(deposito.StockActual ?? 0),
+    stockReservado: Number(deposito.StockReservado ?? 0),
+    stockConReservas: Number(deposito.StockConReservas ?? 0),
   }
 }

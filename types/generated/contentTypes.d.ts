@@ -643,6 +643,35 @@ export interface ApiFormularioFormulario extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
+  collectionName: 'homepages';
+  info: {
+    description: 'Banners del carrusel principal de la home (1600x500px recomendado)';
+    displayName: 'Homepage';
+    pluralName: 'homepages';
+    singularName: 'homepage';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    banners: Schema.Attribute.Component<'banner.banner-slide', true>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::homepage.homepage'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiMarcaMarca extends Struct.CollectionTypeSchema {
   collectionName: 'marcas';
   info: {
@@ -775,6 +804,41 @@ export interface ApiOrdenOrden extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiPermisoPermiso extends Struct.CollectionTypeSchema {
+  collectionName: 'permisos';
+  info: {
+    description: 'Otorga acceso a herramientas internas (ej. calculadora-remitos) a usuarios puntuales';
+    displayName: 'Permiso';
+    pluralName: 'permisos';
+    singularName: 'permiso';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::permiso.permiso'
+    > &
+      Schema.Attribute.Private;
+    nombre: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.Unique;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    usuarios: Schema.Attribute.Relation<
+      'manyToMany',
+      'plugin::users-permissions.user'
+    >;
+  };
+}
+
 export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   collectionName: 'products';
   info: {
@@ -798,6 +862,8 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       'images' | 'files' | 'videos' | 'audios',
       true
     >;
+    inactivoPorSync: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -806,6 +872,13 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     marca: Schema.Attribute.Relation<'manyToOne', 'api::marca.marca'>;
     nombreProducto: Schema.Attribute.String & Schema.Attribute.Required;
+    pesoGramos: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 0;
+        },
+        number
+      >;
     Popular: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     porcentajeDescuento: Schema.Attribute.Integer &
       Schema.Attribute.SetMinMax<
@@ -1471,9 +1544,11 @@ declare module '@strapi/strapi' {
       'api::direccion.direccion': ApiDireccionDireccion;
       'api::favorito.favorito': ApiFavoritoFavorito;
       'api::formulario.formulario': ApiFormularioFormulario;
+      'api::homepage.homepage': ApiHomepageHomepage;
       'api::marca.marca': ApiMarcaMarca;
       'api::orden-producto.orden-producto': ApiOrdenProductoOrdenProducto;
       'api::orden.orden': ApiOrdenOrden;
+      'api::permiso.permiso': ApiPermisoPermiso;
       'api::product.product': ApiProductProduct;
       'api::proveedor.proveedor': ApiProveedorProveedor;
       'api::subcategoria.subcategoria': ApiSubcategoriaSubcategoria;

@@ -1,0 +1,26 @@
+{
+  "kind": "collectionType",
+  "collectionName": "permisos",
+  "info": {
+    "singularName": "permiso",
+    "pluralName": "permisos",
+    "displayName": "Permiso",
+    "description": "Otorga acceso a herramientas internas (ej. calculadora-remitos) a usuarios puntuales"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "nombre": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "usuarios": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}
