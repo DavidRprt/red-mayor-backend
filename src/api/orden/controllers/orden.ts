@@ -389,6 +389,57 @@ export default factories.createCoreController(
       }
     },
 
+    async subirComprobante(ctx) {
+      const { documentId } = ctx.params
+      const usuario = ctx.state.user
+
+      if (!usuario) return ctx.unauthorized("No autorizado.")
+
+      const orden = await strapi.db.query("api::orden.orden").findOne({
+        where: { documentId, user: usuario.id },
+      })
+
+      if (!orden) return ctx.notFound("Orden no encontrada.")
+      if (orden.metodoPago !== "Transferencia") {
+        return ctx.badRequest("Esta orden no es por transferencia.")
+      }
+
+      const files = (ctx.request as any).files
+      const file = files?.comprobante
+
+      if (!file) return ctx.badRequest("No se recibió ningún archivo.")
+
+      try {
+        const [archivoSubido] = await strapi
+          .plugin("upload")
+          .service("upload")
+          .upload({
+            data: { fileInfo: { name: file.name, caption: "Comprobante de pago" } },
+            files: file,
+          })
+
+        await strapi.entityService.update("api::orden.orden", orden.id, {
+          data: { comprobantePago: archivoSubido.id } as any,
+        })
+
+        strapi.log.info(`[Orden] Comprobante subido | Orden: RXM-${orden.id} | Usuario: ${usuario.email}`)
+
+        strapi.plugins["email"].services.email
+          .send({
+            to: ["contacto@redxmayor.com", "davirapo@gmail.com"],
+            from: strapi.config.get("plugin.email.settings.defaultFrom"),
+            subject: `Comprobante subido — Orden RXM-${orden.id}`,
+            html: `<p>El cliente <strong>${usuario.username} (${usuario.email})</strong> subió el comprobante de pago de la orden <strong>RXM-${orden.id}</strong>.</p><p>Revisala en el panel de Órdenes de Strapi para confirmar el pago.</p>`,
+          })
+          .catch((err) => strapi.log.error(`[Orden] Error al notificar comprobante | ${err}`))
+
+        return ctx.send({ message: "Comprobante subido con éxito." })
+      } catch (error) {
+        strapi.log.error(`[Orden] Error al subir comprobante | Orden: RXM-${orden.id} | ${error}`)
+        return ctx.internalServerError("Error al subir el comprobante.")
+      }
+    },
+
     async pagarConTarjeta(ctx) {
       const { mpFormData, direccion, productos, observaciones, cupon, totalFrontend } =
         ctx.request.body || {}

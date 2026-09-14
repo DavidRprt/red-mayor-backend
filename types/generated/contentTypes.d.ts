@@ -770,6 +770,7 @@ export interface ApiOrdenOrden extends Struct.CollectionTypeSchema {
   };
   attributes: {
     caeFactura: Schema.Attribute.String;
+    comprobantePago: Schema.Attribute.Media<'images' | 'files'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

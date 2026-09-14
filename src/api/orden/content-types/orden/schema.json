@@ -59,6 +59,14 @@
     },
     "caeFactura": {
       "type": "string"
+    },
+    "comprobantePago": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files"
+      ]
     }
   }
 }

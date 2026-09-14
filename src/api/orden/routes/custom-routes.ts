@@ -18,5 +18,14 @@ module.exports = {
         middlewares: [],
       },
     },
+    {
+      method: "POST",
+      path: "/ordenes/:documentId/comprobante",
+      handler: "orden.subirComprobante",
+      config: {
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 }
