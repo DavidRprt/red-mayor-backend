@@ -13,6 +13,12 @@ const mpClient = new MercadoPagoConfig({
   accessToken: process.env.MP_ACCESS_TOKEN || "",
 })
 
+// Fuera de producción (desarrollo local, previews, etc.) las órdenes se crean
+// igual para poder probar el flujo, pero no deben tocar sistemas reales: no se
+// descuenta stock real, no se factura/envía a Contabilium, y no se le manda
+// mail de confirmación al comprador — solo queda el aviso interno al equipo.
+const ES_PRODUCCION = process.env.NODE_ENV === "production"
+
 export default factories.createCoreController(
   "api::orden.orden",
   ({ strapi }) => ({
@@ -139,11 +145,13 @@ export default factories.createCoreController(
                 producto.precioBase * (1 - porcentajeDescuentoCupon / 100)
             }
 
-            // Actualizar stock
-            await strapi.db.query("api::product.product").update({
-              where: { id: producto.id },
-              data: { stock: producto.stock - cantidadFinal },
-            })
+            // Actualizar stock (solo en producción — no tocar stock real desde pruebas)
+            if (ES_PRODUCCION) {
+              await strapi.db.query("api::product.product").update({
+                where: { id: producto.id },
+                data: { stock: producto.stock - cantidadFinal },
+              })
+            }
 
             // Crear orden-producto
             await strapi.entityService.create(
@@ -205,11 +213,13 @@ export default factories.createCoreController(
               if (prod) {
                 precioCombo += prod.precioBase * cantidad
 
-                // Actualizar stock de cada producto interno
-                await strapi.db.query("api::product.product").update({
-                  where: { id: prod.id },
-                  data: { stock: prod.stock - cantidad },
-                })
+                // Actualizar stock de cada producto interno (solo en producción)
+                if (ES_PRODUCCION) {
+                  await strapi.db.query("api::product.product").update({
+                    where: { id: prod.id },
+                    data: { stock: prod.stock - cantidad },
+                  })
+                }
 
                 productosInternos.push({
                   nombre: prod.nombreProducto,
@@ -277,11 +287,11 @@ export default factories.createCoreController(
           )
           .join("<hr>")
 
-        // === Mail al ADMIN ===
+        // === Mail al ADMIN === (siempre se manda, incluso fuera de producción)
         await strapi.plugins["email"].services.email.send({
           to: ["contacto@redxmayor.com", "davirapo@gmail.com", "jamalsolares@gmail.com", "jamalsolares@redxmayor.com"],
           from: strapi.config.get("plugin.email.settings.defaultFrom"),
-          subject: "Nueva venta registrada en RedXMayor",
+          subject: ES_PRODUCCION ? "Nueva venta registrada en RedXMayor" : "[DEV] Nueva venta registrada en RedXMayor",
           html: `
             <h1>Nueva venta registrada</h1>
             <p>Fecha: ${fechaFormateada}</p>
@@ -302,12 +312,13 @@ export default factories.createCoreController(
           `,
         })
 
-        // === Mail al CLIENTE ===
-        await strapi.plugins["email"].services.email.send({
-          to: usuario.email,
-          from: strapi.config.get("plugin.email.settings.defaultFrom"),
-          subject: "¡Gracias por tu compra en RedXMayor!",
-          html: `
+        // === Mail al CLIENTE === (solo en producción)
+        if (ES_PRODUCCION) {
+          await strapi.plugins["email"].services.email.send({
+            to: usuario.email,
+            from: strapi.config.get("plugin.email.settings.defaultFrom"),
+            subject: "¡Gracias por tu compra en RedXMayor!",
+            html: `
 <table style="width:100%; background-color:#f4f4f8; padding:20px; font-family:Arial,sans-serif;">
   <tr>
     <td>
@@ -349,34 +360,37 @@ export default factories.createCoreController(
   </tr>
 </table>
 `,
-        })
+          })
+        }
 
         strapi.log.info(`[Orden] Creada exitosamente | ID: ${nuevaOrden.id} | Usuario: ${usuario.email} | Productos: ${productosProcesados.length}`)
 
-        // Contabilium: enviar venta (no-blocking — no corta el flujo si falla)
-        ;(async () => {
-          try {
-            await enviarVenta({
-              ordenId: nuevaOrden.id,
-              metodoPago,
-              usuario: { email: usuario.email, username: usuario.username },
-              detallesUsuario,
-              cuponPorcentaje: porcentajeDescuentoCupon ?? undefined,
-              productos: productosProcesados.map((item) => ({
-                nombre: item.nombreProducto,
-                slug: item.slug,
-                cantidad: item.cantidadFinal,
-                precioBase: item.precioUnidad,
-                porcentajeDescuento: item.porcentajeDescuento,
-                tasaIva: item.tasaIva,
-              })),
-              observaciones: observaciones || "",
-            })
-            strapi.log.info(`[Contabilium] Venta enviada | Orden: RXM-${nuevaOrden.id}`)
-          } catch (err) {
-            strapi.log.error(`[Contabilium] Error al enviar venta | Orden: RXM-${nuevaOrden.id} | ${err}`)
-          }
-        })()
+        // Contabilium: enviar venta (no-blocking — no corta el flujo si falla). Solo en producción.
+        if (ES_PRODUCCION) {
+          ;(async () => {
+            try {
+              await enviarVenta({
+                ordenId: nuevaOrden.id,
+                metodoPago,
+                usuario: { email: usuario.email, username: usuario.username },
+                detallesUsuario,
+                cuponPorcentaje: porcentajeDescuentoCupon ?? undefined,
+                productos: productosProcesados.map((item) => ({
+                  nombre: item.nombreProducto,
+                  slug: item.slug,
+                  cantidad: item.cantidadFinal,
+                  precioBase: item.precioUnidad,
+                  porcentajeDescuento: item.porcentajeDescuento,
+                  tasaIva: item.tasaIva,
+                })),
+                observaciones: observaciones || "",
+              })
+              strapi.log.info(`[Contabilium] Venta enviada | Orden: RXM-${nuevaOrden.id}`)
+            } catch (err) {
+              strapi.log.error(`[Contabilium] Error al enviar venta | Orden: RXM-${nuevaOrden.id} | ${err}`)
+            }
+          })()
+        }
 
         return ctx.send({
           message: "Orden creada con éxito",
@@ -567,12 +581,14 @@ export default factories.createCoreController(
           return ctx.badRequest(`Pago no aprobado: ${pagoMP.status_detail}`)
         }
 
-        // 6. Pago aprobado: descontar stock y crear orden-productos
+        // 6. Pago aprobado: descontar stock (solo en producción) y crear orden-productos
         for (const { producto, cantidadFinal, precioConDescuento } of productosProcesados) {
-          await strapi.db.query("api::product.product").update({
-            where: { id: producto.id },
-            data: { stock: producto.stock - cantidadFinal },
-          })
+          if (ES_PRODUCCION) {
+            await strapi.db.query("api::product.product").update({
+              where: { id: producto.id },
+              data: { stock: producto.stock - cantidadFinal },
+            })
+          }
 
           await strapi.entityService.create("api::orden-producto.orden-producto", {
             data: {
@@ -592,46 +608,48 @@ export default factories.createCoreController(
 
         strapi.log.info(`[MP] Pago aprobado | Orden: RXM-${nuevaOrden.id} | MP ID: ${pagoMP.id} | Total: $${Math.round(totalReal * 100) / 100}`)
 
-        // Contabilium: enviar venta + facturar (no-blocking — no corta el flujo si falla)
-        ;(async () => {
-          try {
-            await enviarVenta({
-              ordenId: nuevaOrden.id,
-              metodoPago: "MercadoPago",
-              usuario: { email: usuario.email, username: usuario.username },
-              detallesUsuario,
-              cuponPorcentaje: porcentajeDescuentoCupon ?? undefined,
-              productos: productosProcesados.map(({ producto, cantidadFinal, porcentajeDescuento, tasaIva }) => ({
-                nombre: producto.nombreProducto,
-                slug: producto.slug,
-                cantidad: cantidadFinal,
-                precioBase: producto.precioBase,
-                porcentajeDescuento,
-                tasaIva,
-              })),
-              observaciones: observaciones || "",
-            })
-            strapi.log.info(`[Contabilium] Venta enviada | Orden: RXM-${nuevaOrden.id}`)
+        // Contabilium: enviar venta + facturar (no-blocking — no corta el flujo si falla). Solo en producción.
+        if (ES_PRODUCCION) {
+          ;(async () => {
+            try {
+              await enviarVenta({
+                ordenId: nuevaOrden.id,
+                metodoPago: "MercadoPago",
+                usuario: { email: usuario.email, username: usuario.username },
+                detallesUsuario,
+                cuponPorcentaje: porcentajeDescuentoCupon ?? undefined,
+                productos: productosProcesados.map(({ producto, cantidadFinal, porcentajeDescuento, tasaIva }) => ({
+                  nombre: producto.nombreProducto,
+                  slug: producto.slug,
+                  cantidad: cantidadFinal,
+                  precioBase: producto.precioBase,
+                  porcentajeDescuento,
+                  tasaIva,
+                })),
+                observaciones: observaciones || "",
+              })
+              strapi.log.info(`[Contabilium] Venta enviada | Orden: RXM-${nuevaOrden.id}`)
 
-            if (detallesUsuario?.CUIT) {
-              const facturaData = await facturarVenta(nuevaOrden.id)
-              if (facturaData) {
-                await strapi.entityService.update("api::orden.orden", nuevaOrden.id, {
-                  data: {
-                    linkFactura: facturaData.linkFactura,
-                    numeroFactura: facturaData.numeroFactura,
-                    caeFactura: facturaData.caeFactura,
-                  },
-                })
-                strapi.log.info(`[Contabilium] Factura emitida | Orden: RXM-${nuevaOrden.id} | Número: ${facturaData.numeroFactura} | CAE: ${facturaData.caeFactura}`)
+              if (detallesUsuario?.CUIT) {
+                const facturaData = await facturarVenta(nuevaOrden.id)
+                if (facturaData) {
+                  await strapi.entityService.update("api::orden.orden", nuevaOrden.id, {
+                    data: {
+                      linkFactura: facturaData.linkFactura,
+                      numeroFactura: facturaData.numeroFactura,
+                      caeFactura: facturaData.caeFactura,
+                    },
+                  })
+                  strapi.log.info(`[Contabilium] Factura emitida | Orden: RXM-${nuevaOrden.id} | Número: ${facturaData.numeroFactura} | CAE: ${facturaData.caeFactura}`)
+                }
+              } else {
+                strapi.log.warn(`[Contabilium] Factura omitida | Orden: RXM-${nuevaOrden.id} | El usuario no tiene CUIT cargado`)
               }
-            } else {
-              strapi.log.warn(`[Contabilium] Factura omitida | Orden: RXM-${nuevaOrden.id} | El usuario no tiene CUIT cargado`)
+            } catch (err) {
+              strapi.log.error(`[Contabilium] Error | Orden: RXM-${nuevaOrden.id} | ${err}`)
             }
-          } catch (err) {
-            strapi.log.error(`[Contabilium] Error | Orden: RXM-${nuevaOrden.id} | ${err}`)
-          }
-        })()
+          })()
+        }
 
         // 7. Mails
         const fecha = new Date()
@@ -640,7 +658,7 @@ export default factories.createCoreController(
         await strapi.plugins["email"].services.email.send({
           to: ["contacto@redxmayor.com", "davirapo@gmail.com", "jamalsolares@gmail.com", "jamalsolares@redxmayor.com"],
           from: strapi.config.get("plugin.email.settings.defaultFrom"),
-          subject: "Nueva venta registrada en RedXMayor (Tarjeta)",
+          subject: ES_PRODUCCION ? "Nueva venta registrada en RedXMayor (Tarjeta)" : "[DEV] Nueva venta registrada en RedXMayor (Tarjeta)",
           html: `
             <h1>Nueva venta registrada</h1>
             <p>Fecha: ${fechaFormateada}</p>
@@ -657,11 +675,13 @@ export default factories.createCoreController(
           `,
         })
 
-        await strapi.plugins["email"].services.email.send({
-          to: usuario.email,
-          from: strapi.config.get("plugin.email.settings.defaultFrom"),
-          subject: "¡Gracias por tu compra en RedXMayor!",
-          html: `
+        // Mail al cliente — solo en producción
+        if (ES_PRODUCCION) {
+          await strapi.plugins["email"].services.email.send({
+            to: usuario.email,
+            from: strapi.config.get("plugin.email.settings.defaultFrom"),
+            subject: "¡Gracias por tu compra en RedXMayor!",
+            html: `
 <table style="width:100%; background-color:#f4f4f8; padding:20px; font-family:Arial,sans-serif;">
   <tr><td>
     <table style="max-width:600px; margin:0 auto; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
@@ -686,7 +706,8 @@ export default factories.createCoreController(
     </table>
   </td></tr>
 </table>`,
-        })
+          })
+        }
 
         return ctx.send({
           message: "Pago aprobado y orden creada",
