@@ -6,12 +6,21 @@ import * as XLSX from 'xlsx'
 const ESTADOS = ['Pendiente', 'Pagado', 'Enviado', 'Completado', 'Cancelado']
 const METODOS_PAGO = ['Transferencia', 'MercadoPago', 'Convenir']
 
+// Cuentas propias de prueba — nunca deben verse en el panel ni en los exports.
+const EMAILS_EXCLUIDOS = ['davirapo@gmail.com']
+
 interface OrdenProducto {
   id: number
   cantidad: number
   precioUnidad: number
   precioConDescuento: number
   producto: string
+}
+
+interface ProductoInfo {
+  slug: string
+  nombreProducto: string
+  Subtitulo?: string
 }
 
 interface Orden {
@@ -22,7 +31,7 @@ interface Orden {
   createdAt: string
   numeroFactura?: string
   user?: { username?: string; email?: string }
-  direccion?: { direccion?: string; ciudad?: string }
+  direccion?: { direccion?: string; ciudad?: string; provincia?: string; codigoPostal?: string }
   orden_productos?: OrdenProducto[]
   comprobantePago?: { url: string; name: string } | null
 }
@@ -41,6 +50,7 @@ function formatFecha(iso: string): string {
 export const OrdenesPage = () => {
   const { get, put } = useFetchClient()
   const [ordenes, setOrdenes] = React.useState<Orden[]>([])
+  const [productos, setProductos] = React.useState<Map<string, ProductoInfo>>(new Map())
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
   const [expandido, setExpandido] = React.useState<string | null>(null)
@@ -49,24 +59,48 @@ export const OrdenesPage = () => {
   const [filtroEstado, setFiltroEstado] = React.useState<string>('')
   const [filtroMetodoPago, setFiltroMetodoPago] = React.useState<string>('')
   const [busqueda, setBusqueda] = React.useState('')
+  const [filtroFecha, setFiltroFecha] = React.useState<'todas' | 'hoy' | '24h' | 'semana' | 'rango'>('todas')
+  const [fechaDesde, setFechaDesde] = React.useState('')
+  const [fechaHasta, setFechaHasta] = React.useState('')
 
   const cargar = React.useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const { data } = await get('/content-manager/collection-types/api::orden.orden', {
-        params: {
-          pageSize: 200,
-          sort: 'createdAt:desc',
-          populate: {
-            user: { fields: ['username', 'email'] },
-            direccion: { fields: ['direccion', 'ciudad'] },
-            orden_productos: true,
-            comprobantePago: { fields: ['url', 'name'] },
+      const [ordenesRes, productosRes] = await Promise.all([
+        get('/content-manager/collection-types/api::orden.orden', {
+          params: {
+            pageSize: 200,
+            sort: 'createdAt:desc',
+            populate: {
+              user: { fields: ['username', 'email'] },
+              direccion: { fields: ['direccion', 'ciudad', 'provincia', 'codigoPostal'] },
+              orden_productos: true,
+              comprobantePago: { fields: ['url', 'name'] },
+            },
           },
-        },
-      })
-      setOrdenes(data?.results || [])
+        }),
+        get('/content-manager/collection-types/api::product.product', {
+          params: {
+            pageSize: 1000,
+            fields: ['slug', 'nombreProducto', 'Subtitulo'],
+          },
+        }),
+      ])
+
+      // Fuera de producción sí se muestran — en local son casi todas las órdenes de prueba.
+      const resultados: Orden[] = ordenesRes.data?.results || []
+      setOrdenes(
+        import.meta.env.PROD
+          ? resultados.filter((o) => !EMAILS_EXCLUIDOS.includes((o.user?.email || '').toLowerCase()))
+          : resultados
+      )
+
+      const mapa = new Map<string, ProductoInfo>()
+      for (const p of productosRes.data?.results || []) {
+        mapa.set(p.documentId, { slug: p.slug, nombreProducto: p.nombreProducto, Subtitulo: p.Subtitulo })
+      }
+      setProductos(mapa)
     } catch (err: any) {
       setError('No se pudieron cargar las órdenes.')
     } finally {
@@ -103,6 +137,16 @@ export const OrdenesPage = () => {
       const enUsuario = (o.user?.username || '').toLowerCase().includes(q) || (o.user?.email || '').toLowerCase().includes(q)
       if (!enId && !enUsuario) return false
     }
+    if (filtroFecha === 'rango') {
+      if (fechaDesde && new Date(o.createdAt) < new Date(`${fechaDesde}T00:00:00`)) return false
+      if (fechaHasta && new Date(o.createdAt) > new Date(`${fechaHasta}T23:59:59.999`)) return false
+    } else if (filtroFecha !== 'todas') {
+      const corte = new Date()
+      if (filtroFecha === 'hoy') corte.setHours(0, 0, 0, 0)
+      else if (filtroFecha === '24h') corte.setHours(corte.getHours() - 24)
+      else if (filtroFecha === 'semana') corte.setDate(corte.getDate() - 7)
+      if (new Date(o.createdAt) < corte) return false
+    }
     return true
   })
 
@@ -116,6 +160,10 @@ export const OrdenesPage = () => {
       'Método de pago': o.metodoPago,
       'Cant. productos': (o.orden_productos || []).length,
       Total: calcularTotal(o),
+      Dirección: o.direccion?.direccion || '',
+      Ciudad: o.direccion?.ciudad || '',
+      Provincia: o.direccion?.provincia || '',
+      CP: o.direccion?.codigoPostal || '',
       Comprobante: o.comprobantePago ? 'Sí' : 'No',
       'N° Factura': o.numeroFactura || '',
     }))
@@ -186,6 +234,38 @@ export const OrdenesPage = () => {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBusqueda(e.target.value)}
           />
         </Box>
+        <Box minWidth="180px">
+          <SingleSelect
+            placeholder="Cualquier fecha"
+            value={filtroFecha}
+            onChange={(v: string | number) => setFiltroFecha(String(v) as typeof filtroFecha)}
+          >
+            <SingleSelectOption value="todas">Cualquier fecha</SingleSelectOption>
+            <SingleSelectOption value="hoy">Hoy</SingleSelectOption>
+            <SingleSelectOption value="24h">Últimas 24 hs</SingleSelectOption>
+            <SingleSelectOption value="semana">Última semana</SingleSelectOption>
+            <SingleSelectOption value="rango">Rango de fechas</SingleSelectOption>
+          </SingleSelect>
+        </Box>
+        {filtroFecha === 'rango' && (
+          <>
+            <input
+              type="date"
+              value={fechaDesde}
+              title="Desde"
+              onChange={(e) => setFechaDesde(e.target.value)}
+              style={{ border: '1px solid #dcdce4', borderRadius: 4, padding: '8px 10px', fontSize: 13, color: 'inherit', background: 'transparent' }}
+            />
+            <Typography variant="pi" textColor="neutral600">hasta</Typography>
+            <input
+              type="date"
+              value={fechaHasta}
+              title="Hasta"
+              onChange={(e) => setFechaHasta(e.target.value)}
+              style={{ border: '1px solid #dcdce4', borderRadius: 4, padding: '8px 10px', fontSize: 13, color: 'inherit', background: 'transparent' }}
+            />
+          </>
+        )}
       </Flex>
 
       {loading && <Typography>Cargando órdenes...</Typography>}
@@ -235,26 +315,44 @@ export const OrdenesPage = () => {
                     </td>
                     <td style={{ padding: '8px 12px' }}>{o.numeroFactura || '—'}</td>
                     <td style={{ padding: '8px 12px' }}>
-                      <Button
-                        variant="tertiary"
-                        size="S"
+                      <button
                         onClick={() => setExpandido(expandido === o.documentId ? null : o.documentId)}
+                        style={{
+                          background: 'transparent',
+                          border: '1px solid currentColor',
+                          borderRadius: 4,
+                          padding: '4px 10px',
+                          fontSize: 12,
+                          color: 'inherit',
+                          cursor: 'pointer',
+                        }}
                       >
                         {expandido === o.documentId ? 'Ocultar' : 'Ver productos'}
-                      </Button>
+                      </button>
                     </td>
                   </tr>
                   {expandido === o.documentId && (
                     <tr>
                       <td colSpan={9} style={{ padding: '8px 12px 16px 32px', background: '#fafafb' }}>
-                        {(o.orden_productos || []).map((op) => (
-                          <Typography key={op.id} as="p" variant="pi">
-                            {op.producto} — x{op.cantidad} — ${op.precioConDescuento.toLocaleString('es-AR')}
-                          </Typography>
-                        ))}
+                        {(o.orden_productos || []).map((op) => {
+                          const info = productos.get(op.producto)
+                          return (
+                            <Box key={op.id} marginBottom={2}>
+                              <Typography as="p" variant="pi" style={{ color: '#32324d' }}>
+                                SKU: {info?.slug || op.producto} — {info?.nombreProducto || 'Producto no encontrado'}
+                                {' '}— x{op.cantidad} — ${op.precioConDescuento.toLocaleString('es-AR')}
+                              </Typography>
+                              {info?.Subtitulo && (
+                                <Typography as="p" variant="pi" style={{ color: '#666687' }}>
+                                  {info.Subtitulo}
+                                </Typography>
+                              )}
+                            </Box>
+                          )
+                        })}
                         {o.direccion && (
-                          <Typography as="p" variant="pi" textColor="neutral600" marginTop={2}>
-                            Envío: {o.direccion.direccion}, {o.direccion.ciudad}
+                          <Typography as="p" variant="pi" style={{ color: '#666687', marginTop: 8 }}>
+                            Envío: {o.direccion.direccion}, {o.direccion.ciudad}, {o.direccion.provincia} (CP {o.direccion.codigoPostal})
                           </Typography>
                         )}
                       </td>
