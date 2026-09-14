@@ -10,5 +10,15 @@ export default {
         middlewares: [],
       },
     },
+    {
+      method: 'GET',
+      path: '/contabilium-sync/progreso',
+      handler: 'contabilium-sync.progreso',
+      config: {
+        auth: false,
+        policies: [],
+        middlewares: [],
+      },
+    },
   ],
 };

@@ -19,12 +19,49 @@ export interface StockSyncResultado {
   actualizados: string[]
   desactivados: string[]
   reactivados: string[]
-  noEncontrados: string[]
+  noEncontrados: { nombre: string; sku: string }[]
   errores: { nombre: string; error: string }[]
 }
 
 function resultadoVacio(): StockSyncResultado {
   return { totalProductos: 0, actualizados: [], desactivados: [], reactivados: [], noEncontrados: [], errores: [] }
+}
+
+// ─────────────────────────────────────────────
+// Progreso en vivo — para que "Sincronizar ahora" en el admin pueda mostrar
+// una barra de progreso en vez de dejar a quien lo corre esperando a ciegas
+// (puede tardar bastante según la cantidad de productos).
+// ─────────────────────────────────────────────
+
+export interface StockSyncProgreso {
+  corriendo: boolean
+  procesados: number
+  total: number
+  actual: string | null
+  mensaje: string | null
+  resultado: StockSyncResultado | null
+  error: string | null
+  actualizadoEn: number
+}
+
+function progresoInicial(): StockSyncProgreso {
+  return {
+    corriendo: false,
+    procesados: 0,
+    total: 0,
+    actual: null,
+    mensaje: null,
+    resultado: null,
+    error: null,
+    actualizadoEn: Date.now(),
+  }
+}
+
+let progresoActual: StockSyncProgreso = progresoInicial()
+
+/** Estado actual de la sincronización — lo consulta el admin por polling. */
+export function obtenerProgresoSync(): StockSyncProgreso {
+  return { ...progresoActual }
 }
 
 // Evita que dos corridas (el cron diario y una manual, por ejemplo) pisen a
@@ -33,6 +70,11 @@ let sincronizacionEnCurso = false
 
 /** Sincroniza el stock de todos los productos activos e inactivos contra Contabilium. */
 export async function sincronizarStock(strapi: any): Promise<StockSyncResultado> {
+  if (process.env.NODE_ENV !== 'production') {
+    strapi.log.warn(`[Stock Sync] NODE_ENV=${process.env.NODE_ENV} (no es 'production'), se omite la sincronización.`)
+    return resultadoVacio()
+  }
+
   if (process.env.CONTABILIUM_ENABLED !== 'true') {
     strapi.log.warn('[Stock Sync] Contabilium deshabilitado (CONTABILIUM_ENABLED != true), se omite la sincronización.')
     return resultadoVacio()
@@ -48,11 +90,16 @@ export async function sincronizarStock(strapi: any): Promise<StockSyncResultado>
     return resultadoVacio()
   }
   sincronizacionEnCurso = true
+  progresoActual = { ...progresoInicial(), corriendo: true, mensaje: 'Iniciando sincronización…' }
 
   try {
     const resultado = await sincronizarProductos(strapi)
+    progresoActual = { ...progresoActual, corriendo: false, mensaje: 'Listo.', resultado, actualizadoEn: Date.now() }
     await enviarResumenSync(strapi, resultado)
     return resultado
+  } catch (err: any) {
+    progresoActual = { ...progresoActual, corriendo: false, error: String(err?.message || err), actualizadoEn: Date.now() }
+    throw err
   } finally {
     sincronizacionEnCurso = false
   }
@@ -68,17 +115,35 @@ async function sincronizarProductos(strapi: any): Promise<StockSyncResultado> {
 
   resultado.totalProductos = items.length
   strapi.log.info(`[Stock Sync] Productos: iniciando sincronización de ${items.length}`)
+  progresoActual = {
+    ...progresoActual,
+    total: items.length,
+    procesados: 0,
+    actual: null,
+    mensaje: `Sincronizando productos (0/${items.length})…`,
+    actualizadoEn: Date.now(),
+  }
 
+  let indice = 0
   for (const item of items) {
     const nombre = item.nombreProducto
+    indice += 1
     if (!item.slug) continue
+
+    progresoActual = {
+      ...progresoActual,
+      procesados: indice - 1,
+      actual: nombre,
+      mensaje: `Sincronizando productos (${indice}/${items.length}): ${nombre}`,
+      actualizadoEn: Date.now(),
+    }
 
     try {
       const stock = await getStockBySKU(item.slug)
       await sleep(RATE_LIMIT_DELAY_MS)
 
       if (!stock) {
-        resultado.noEncontrados.push(nombre)
+        resultado.noEncontrados.push({ nombre, sku: item.slug })
         if (item.activo) {
           await strapi.documents(uid).update({
             documentId: item.documentId,
@@ -121,6 +186,14 @@ async function sincronizarProductos(strapi: any): Promise<StockSyncResultado> {
     }
   }
 
+  progresoActual = {
+    ...progresoActual,
+    procesados: items.length,
+    actual: null,
+    mensaje: `Productos listos (${items.length}/${items.length}).`,
+    actualizadoEn: Date.now(),
+  }
+
   strapi.log.info(
     `[Stock Sync] Productos: terminado — actualizados: ${resultado.actualizados.length}, desactivados: ${resultado.desactivados.length}, reactivados: ${resultado.reactivados.length}, no encontrados: ${resultado.noEncontrados.length}, errores: ${resultado.errores.length}`
   )
@@ -148,16 +221,10 @@ async function enviarResumenSync(strapi: any, r: StockSyncResultado) {
       ? `<p style="font-size:13px;color:${color};margin:16px 0 4px;font-weight:700;">${titulo}:</p><p style="font-size:12px;color:#6b6b6b;margin:0;">${items.join(', ')}</p>`
       : ''
 
-  const filasHTML = filas
-    .map(
-      (f) =>
-        `<tr><td style="padding:6px 0;font-size:14px;color:#1a1a36;">${f.label}</td><td style="padding:6px 0;font-size:14px;color:#1a1a36;text-align:right;font-weight:700;">${f.value}</td></tr>`
-    )
-    .join('')
-
   const listasHTML = [
     listaHTML('Desactivados', r.desactivados),
     listaHTML('Reactivados', r.reactivados),
+    listaHTML('No encontrados', r.noEncontrados.map((n) => `${n.nombre} (${n.sku})`)),
     listaHTML('Errores', r.errores.map((e) => `${e.nombre}: ${e.error}`), '#dc2626'),
   ].join('')
 
@@ -174,7 +241,7 @@ async function enviarResumenSync(strapi: any, r: StockSyncResultado) {
         </tr>
         <tr>
           <td style="padding:20px;">
-            <table style="width:100%; border-collapse:collapse;">${filasHTML}</table>
+            <table style="width:100%; border-collapse:collapse;">${filas.map((f) => `<tr><td style="padding:6px 0;font-size:14px;color:#1a1a36;">${f.label}</td><td style="padding:6px 0;font-size:14px;color:#1a1a36;text-align:right;font-weight:700;">${f.value}</td></tr>`).join('')}</table>
             ${listasHTML}
           </td>
         </tr>
