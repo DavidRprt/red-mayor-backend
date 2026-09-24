@@ -132,7 +132,7 @@ export const ContabiliumSyncPage = () => {
 
   const consultarProgreso = async () => {
     try {
-      const { data } = await get('/contabilium-sync/progreso')
+      const { data } = await get('/api/contabilium-sync/progreso')
       const p: StockSyncProgreso = data.data
       setProgreso(p)
       if (!p.corriendo) detenerPolling()
@@ -158,7 +158,7 @@ export const ContabiliumSyncPage = () => {
   const correr = async () => {
     setError(null)
     try {
-      await post('/contabilium-sync/run')
+      await post('/api/contabilium-sync/run')
       iniciarPolling()
     } catch {
       setError('Error al iniciar la sincronización. Revisá los logs del servidor.')
